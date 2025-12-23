@@ -1,13 +1,13 @@
 {
-  "itemGroup.arcana": "Example Mod Tab",
-  "block.arcana.example_block": "Example Block",
-  "item.arcana.example_item": "Example Item",
+  "item.arcana.diary_kaliastrus": "Diary of Kaliastrus",
+  "itemGroup.arcana.arcana_tab": "Arcana",
 
-  "arcana.configuration.title": "Example Mod Configs",
-  "arcana.configuration.section.arcana.common.toml": "Example Mod Configs",
-  "arcana.configuration.section.arcana.common.toml.title": "Example Mod Configs",
-  "arcana.configuration.items": "Item List",
-  "arcana.configuration.logDirtBlock": "Log Dirt Block",
-  "arcana.configuration.magicNumberIntroduction": "Magic Number Text",
-  "arcana.configuration.magicNumber": "Magic Number"
+  "diary.arcana.subtitle": "Chronicle of Hubris",
+  "diary.arcana.tooltip.line1": "§6An ancient tome of forbidden knowledge",
+  "diary.arcana.tooltip.line2": "§7Right-click to read",
+  "diary.arcana.tooltip.line3": "§8\"I challenged the stars...\"",
+
+  "config.arcana.enableDiarySpawn": "Enable Diary Spawn",
+  "config.arcana.chestSpawnDistance": "Chest Spawn Distance",
+  "config.arcana.debugMode": "Debug Mode"
 }

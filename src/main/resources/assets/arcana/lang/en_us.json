@@ -1,0 +1,13 @@
+{
+  "itemGroup.arcana": "Example Mod Tab",
+  "block.arcana.example_block": "Example Block",
+  "item.arcana.example_item": "Example Item",
+
+  "arcana.configuration.title": "Example Mod Configs",
+  "arcana.configuration.section.arcana.common.toml": "Example Mod Configs",
+  "arcana.configuration.section.arcana.common.toml.title": "Example Mod Configs",
+  "arcana.configuration.items": "Item List",
+  "arcana.configuration.logDirtBlock": "Log Dirt Block",
+  "arcana.configuration.magicNumberIntroduction": "Magic Number Text",
+  "arcana.configuration.magicNumber": "Magic Number"
+}

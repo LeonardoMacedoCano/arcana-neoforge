@@ -4,11 +4,14 @@ import com.example.arcana.ArcanaMod;
 import com.example.arcana.util.DelayedMessageHandler;
 import com.example.arcana.util.DelayedMessageQueue;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Container;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
@@ -26,15 +29,15 @@ public class DiaryPersistenceHandler {
     private static final int RETURN_DELAY_TICKS = 200;
 
     private static final Component[] MESSAGES = new Component[]{
-            Component.literal("Hei… você me deixou cair.\nEu ainda tenho histórias pra te contar.")
+            Component.literal("Oi… você se afastou e me deixou sozinho.\nAinda tenho histórias para te contar.")
                     .withStyle(ChatFormatting.LIGHT_PURPLE),
-            Component.literal("Ei… esse chão é frio demais pra mim.\nNão me abandone agora.")
+            Component.literal("Ei… não importa onde estou, espero que não me perca agora.")
                     .withStyle(ChatFormatting.DARK_PURPLE),
-            Component.literal("Somos parte do mesmo destino agora.\nNão me perca.")
+            Component.literal("Estamos conectados de alguma forma.\nNão me deixe para trás.")
                     .withStyle(ChatFormatting.DARK_PURPLE),
-            Component.literal("Eu caí… mas continuo com você.\nSempre voltarei.")
+            Component.literal("Mesmo que eu esteja longe, continuo com você.\nSempre voltarei.")
                     .withStyle(ChatFormatting.LIGHT_PURPLE),
-            Component.literal("Não dá pra fugir de mim tão fácil.\nAinda precisamos terminar essa história.")
+            Component.literal("Não dá para fugir de mim tão fácil.\nAinda temos muito a compartilhar.")
                     .withStyle(ChatFormatting.DARK_PURPLE)
     };
 
@@ -42,27 +45,24 @@ public class DiaryPersistenceHandler {
     public static void onPlayerTick(PlayerTickEvent.Post event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
 
-        if (!hasPlayerReceivedDiary(player) && playerHasDiary(player)) {
-            markDiaryAsReceived(player);
-            ArcanaMod.LOGGER.debug("Jogador {} pegou o diário!", player.getName().getString());
-        }
+        registerDiaryPickup(player);
 
         if (!isDiaryBondActive(player)) {
-            tryBindPlayerToDiary(player);
+            bindDiaryToPlayerIfHeld(player);
             return;
         }
 
         if (playerHasDiary(player)) {
-            resetMissingTimer(player);
+            resetDiaryMissingTimer(player);
             return;
         }
 
-        if (!hasExceededReturnDelay(player)) return;
-        if (isHoldingCursorItem(player)) return;
+        if (!canReturnDiary(player)) return;
+        if (playerIsHoldingItem(player)) return;
 
-        removeWorldDiaryInstances(player);
-        sendSmartDiaryMessage(player);
-        returnDiary(player);
+        removeAllDiariesFromWorldAndPlayer(player);
+        sendDiaryReminderMessage(player);
+        returnDiaryToPlayer(player);
     }
 
     public static boolean hasPlayerReceivedDiary(ServerPlayer player) {
@@ -71,6 +71,13 @@ public class DiaryPersistenceHandler {
         boolean received = player.getPersistentData().getBoolean(PLAYER_BOUND_KEY);
         if (received) SESSION_ALREADY_HAD_DIARY.add(id);
         return received;
+    }
+
+    private static void registerDiaryPickup(ServerPlayer player) {
+        if (!hasPlayerReceivedDiary(player) && playerHasDiary(player)) {
+            markDiaryAsReceived(player);
+            ArcanaMod.LOGGER.debug("Jogador {} pegou o diário!", player.getName().getString());
+        }
     }
 
     private static void markDiaryAsReceived(ServerPlayer player) {
@@ -83,36 +90,33 @@ public class DiaryPersistenceHandler {
                 player.getPersistentData().getBoolean(PLAYER_BOUND_KEY);
     }
 
-    private static void tryBindPlayerToDiary(ServerPlayer player) {
-        if (!playerHasDiary(player)) return;
-        markDiaryAsReceived(player);
+    private static void bindDiaryToPlayerIfHeld(ServerPlayer player) {
+        if (playerHasDiary(player)) markDiaryAsReceived(player);
     }
 
     private static boolean playerHasDiary(ServerPlayer player) {
-        if (inventoryContainsDiary(player)) return true;
-        if (player.getOffhandItem().getItem() == ArcanaMod.DIARY_KALIASTRUS.get()) return true;
-        if (player.getMainHandItem().getItem() == ArcanaMod.DIARY_KALIASTRUS.get()) return true;
-        return cursorHasDiary(player);
+        return inventoryContainsDiary(player) ||
+                player.getOffhandItem().getItem() == ArcanaMod.DIARY_KALIASTRUS.get() ||
+                player.getMainHandItem().getItem() == ArcanaMod.DIARY_KALIASTRUS.get() ||
+                cursorHasDiary(player);
     }
 
     private static boolean inventoryContainsDiary(ServerPlayer player) {
         for (ItemStack stack : player.getInventory().items)
-            if (stack.getItem() == ArcanaMod.DIARY_KALIASTRUS.get())
-                return true;
+            if (stack.getItem() == ArcanaMod.DIARY_KALIASTRUS.get()) return true;
         return false;
     }
 
     private static boolean cursorHasDiary(ServerPlayer player) {
         ItemStack carried = player.containerMenu.getCarried();
-        if (carried.isEmpty()) return false;
-        return carried.getItem() == ArcanaMod.DIARY_KALIASTRUS.get();
+        return !carried.isEmpty() && carried.getItem() == ArcanaMod.DIARY_KALIASTRUS.get();
     }
 
-    private static void resetMissingTimer(ServerPlayer player) {
+    private static void resetDiaryMissingTimer(ServerPlayer player) {
         DIARY_MISSING_TICKS.remove(player.getUUID());
     }
 
-    private static boolean hasExceededReturnDelay(ServerPlayer player) {
+    private static boolean canReturnDiary(ServerPlayer player) {
         UUID id = player.getUUID();
         int ticks = DIARY_MISSING_TICKS.getOrDefault(id, 0) + 1;
         DIARY_MISSING_TICKS.put(id, ticks);
@@ -121,26 +125,69 @@ public class DiaryPersistenceHandler {
         return true;
     }
 
-    private static boolean isHoldingCursorItem(ServerPlayer player) {
+    private static boolean playerIsHoldingItem(ServerPlayer player) {
         return !player.containerMenu.getCarried().isEmpty();
     }
 
-    private static void removeWorldDiaryInstances(ServerPlayer player) {
-        ServerLevel level = player.serverLevel();
-        List<ItemEntity> toRemove = new ArrayList<>();
-        for (ItemEntity item : level.getEntitiesOfClass(ItemEntity.class, player.getBoundingBox().inflate(64))) {
-            if (item.getItem().getItem() == ArcanaMod.DIARY_KALIASTRUS.get()) toRemove.add(item);
-        }
-        toRemove.forEach(ItemEntity::discard);
+    private static void removeAllDiariesFromWorldAndPlayer(ServerPlayer player) {
+        removeWorldDiaries(player);
+        removeAllDiariesFromNearbyContainers(player);
+        removeCursorDiary(player);
+        removeHandDiaries(player);
+        removeInventoryDiaries(player);
     }
 
-    private static void sendSmartDiaryMessage(ServerPlayer player) {
-        UUID id = player.getUUID();
-        List<Integer> order = PLAYER_MESSAGE_ORDER.computeIfAbsent(id, k -> generateOrder());
-        if (order.isEmpty()) {
-            order = generateOrder();
-            PLAYER_MESSAGE_ORDER.put(id, order);
+    private static void removeWorldDiaries(ServerPlayer player) {
+        ServerLevel level = player.serverLevel();
+        for (ItemEntity item : level.getEntitiesOfClass(ItemEntity.class, player.getBoundingBox().inflate(128))) {
+            if (item.getItem().getItem() == ArcanaMod.DIARY_KALIASTRUS.get()) item.discard();
         }
+    }
+
+    private static void removeAllDiariesFromNearbyContainers(ServerPlayer player) {
+        ServerLevel level = player.serverLevel();
+        int radius = 64;
+        BlockPos playerPos = player.blockPosition();
+
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dy = -radius; dy <= radius; dy++) {
+                for (int dz = -radius; dz <= radius; dz++) {
+                    BlockPos pos = playerPos.offset(dx, dy, dz);
+                    BlockEntity be = level.getBlockEntity(pos);
+                    if (be instanceof Container container) {
+                        for (int i = 0; i < container.getContainerSize(); i++) {
+                            ItemStack stack = container.getItem(i);
+                            if (stack.getItem() == ArcanaMod.DIARY_KALIASTRUS.get()) {
+                                container.setItem(i, ItemStack.EMPTY);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static void removeCursorDiary(ServerPlayer player) {
+        ItemStack cursor = player.containerMenu.getCarried();
+        if (!cursor.isEmpty() && cursor.getItem() == ArcanaMod.DIARY_KALIASTRUS.get())
+            player.containerMenu.setCarried(ItemStack.EMPTY);
+    }
+
+    private static void removeHandDiaries(ServerPlayer player) {
+        if (player.getMainHandItem().getItem() == ArcanaMod.DIARY_KALIASTRUS.get())
+            player.setItemInHand(player.getUsedItemHand(), ItemStack.EMPTY);
+        if (player.getOffhandItem().getItem() == ArcanaMod.DIARY_KALIASTRUS.get())
+            player.setItemInHand(net.minecraft.world.InteractionHand.OFF_HAND, ItemStack.EMPTY);
+    }
+
+    private static void removeInventoryDiaries(ServerPlayer player) {
+        player.getInventory().items.removeIf(stack -> stack.getItem() == ArcanaMod.DIARY_KALIASTRUS.get());
+    }
+
+    private static void sendDiaryReminderMessage(ServerPlayer player) {
+        UUID id = player.getUUID();
+        List<Integer> order = PLAYER_MESSAGE_ORDER.computeIfAbsent(id, k -> generateMessageOrder());
+        if (order.isEmpty()) order.addAll(generateMessageOrder());
         int msgIndex = order.removeFirst();
         Component msg = MESSAGES[msgIndex];
         DelayedMessageQueue queue = new DelayedMessageQueue(player, 20);
@@ -148,13 +195,14 @@ public class DiaryPersistenceHandler {
         DelayedMessageHandler.addQueue(queue);
     }
 
-    private static List<Integer> generateOrder() {
+    private static List<Integer> generateMessageOrder() {
         List<Integer> list = Arrays.asList(0, 1, 2, 3, 4);
         Collections.shuffle(list, RANDOM);
         return new ArrayList<>(list);
     }
 
-    private static void returnDiary(ServerPlayer player) {
-        player.getInventory().add(new ItemStack(ArcanaMod.DIARY_KALIASTRUS.get()));
+    private static void returnDiaryToPlayer(ServerPlayer player) {
+        if (!playerHasDiary(player))
+            player.getInventory().add(new ItemStack(ArcanaMod.DIARY_KALIASTRUS.get()));
     }
 }

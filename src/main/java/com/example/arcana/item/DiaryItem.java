@@ -2,9 +2,7 @@ package com.example.arcana.item;
 
 import com.example.arcana.client.gui.DiaryScreen;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -33,24 +31,6 @@ public class DiaryItem extends Item {
             Minecraft.getInstance().setScreen(new DiaryScreen());
         } else {
             level.playSound(null, player.blockPosition(), SoundEvents.BOOK_PUT, SoundSource.PLAYERS, 0.8F, 1.2F);
-
-            if (level instanceof ServerLevel serverLevel) {
-                for (int i = 0; i < 10; i++) {
-                    double offsetX = (Math.random() - 0.5) * 0.5;
-                    double offsetY = Math.random() * 0.5;
-                    double offsetZ = (Math.random() - 0.5) * 0.5;
-
-                    serverLevel.sendParticles(
-                            ParticleTypes.ENCHANT,
-                            player.getX() + offsetX,
-                            player.getY() + 1.0 + offsetY,
-                            player.getZ() + offsetZ,
-                            1,
-                            0, 0.1, 0,
-                            0.05
-                    );
-                }
-            }
         }
 
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
@@ -63,11 +43,6 @@ public class DiaryItem extends Item {
         tooltipComponents.add(Component.empty());
         tooltipComponents.add(Component.translatable("diary.arcana.tooltip.line3"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
-    }
-
-    @Override
-    public boolean isFoil(@NotNull ItemStack stack) {
-        return true;
     }
 
     @Override

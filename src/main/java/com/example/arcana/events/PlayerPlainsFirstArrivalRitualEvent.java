@@ -1,6 +1,7 @@
 package com.example.arcana.events;
 
 import com.example.arcana.ArcanaMod;
+import com.example.arcana.persistence.DiaryWorldData;
 import com.example.arcana.util.DelayedMessageHandler;
 import com.example.arcana.util.DelayedMessageQueue;
 import net.minecraft.ChatFormatting;
@@ -28,7 +29,7 @@ import java.util.UUID;
 @EventBusSubscriber(modid = ArcanaMod.MODID)
 public class PlayerPlainsFirstArrivalRitualEvent {
 
-    private static final String PLAYER_RECEIVED_RITUAL_KEY = "arcana:diary_received";
+    private static final String PLAYER_RECEIVED_RITUAL_KEY = "arcana.diary_received";
     private static final Set<UUID> SESSION_CACHE = new HashSet<>();
 
     private static final int SEARCH_RADIUS = 120;
@@ -56,13 +57,23 @@ public class PlayerPlainsFirstArrivalRitualEvent {
             return true;
         }
 
-        return SESSION_CACHE.contains(player.getUUID())
-                || hasAlreadyReceived(player)
-                || !isInPlains(player);
+        return !isInPlains(player) || hasPlayerReceivedRitualDiary(player);
     }
 
-    private static boolean hasAlreadyReceived(ServerPlayer player) {
-        return player.getPersistentData().getBoolean(PLAYER_RECEIVED_RITUAL_KEY);
+    public static boolean hasPlayerReceivedRitualDiary(ServerPlayer player) {
+        UUID id = player.getUUID();
+
+        if (SESSION_CACHE.contains(id)) {
+            return true;
+        }
+
+        boolean received = player.getPersistentData().getBoolean(PLAYER_RECEIVED_RITUAL_KEY);
+
+        if (received) {
+            SESSION_CACHE.add(id);
+        }
+
+        return received;
     }
 
     private static void markAsReceived(ServerPlayer player) {
@@ -85,12 +96,22 @@ public class PlayerPlainsFirstArrivalRitualEvent {
     }
 
     private static void generateRitualStructure(ServerLevel level, BlockPos playerPos) {
+        DiaryWorldData state = DiaryWorldData.get(level);
+
+        if (state.hasSpawned()) {
+            return;
+        }
+
         BlockPos base = findValidPlainsSpot(level, playerPos);
         if (base == null) return;
 
         BlockPos surface = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, base);
+
         buildRitual(level, surface);
+
+        state.setSpawned(surface);
     }
+
 
     private static BlockPos findValidPlainsSpot(ServerLevel level, BlockPos origin) {
         for (int r = SEARCH_STEP; r <= SEARCH_RADIUS; r += SEARCH_STEP)

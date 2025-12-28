@@ -1,6 +1,7 @@
 package com.example.arcana.events;
 
 import com.example.arcana.ArcanaMod;
+import com.example.arcana.item.DiaryItem;
 import com.example.arcana.persistence.DiaryWorldData;
 import com.example.arcana.util.DelayedMessageHandler;
 import com.example.arcana.util.DelayedMessageQueue;
@@ -22,15 +23,12 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import static com.example.arcana.ArcanaMod.DIARY_KALIASTRUS;
 
 @EventBusSubscriber(modid = ArcanaMod.MODID)
 public class PlayerPlainsFirstArrivalRitualEvent {
 
     private static final String PLAYER_RECEIVED_RITUAL_KEY = "arcana.diary_received";
-    private static final Set<UUID> SESSION_CACHE = new HashSet<>();
     private static final int SEARCH_RADIUS = 120;
     private static final int SEARCH_STEP = 6;
     private static final int AREA_MIN_OPEN_RADIUS = 12;
@@ -45,12 +43,16 @@ public class PlayerPlainsFirstArrivalRitualEvent {
         if (shouldIgnoreEvent(event)) return;
         ServerPlayer player = (ServerPlayer) event.getEntity();
         ArcanaMod.LOGGER.debug("Evento PlayerTick processado para: {}", player.getName().getString());
-        SESSION_CACHE.add(player.getUUID());
-        markAsReceived(player);
-        ArcanaMod.LOGGER.debug("Marcado que o jogador já recebeu o ritual.");
-        sendNarrativeMessages(player);
-        ArcanaMod.LOGGER.debug("Mensagens narrativas enfileiradas para envio.");
-        generateRitualStructure(player.serverLevel(), player.blockPosition());
+
+        boolean structureGenerated = generateRitualStructure(player.serverLevel(), player.blockPosition(), player);
+
+        if (structureGenerated) {
+            ArcanaMod.LOGGER.debug("Estrutura gerada com sucesso, enviando mensagens narrativas.");
+            markAsReceived(player);
+            sendNarrativeMessages(player);
+        } else {
+            ArcanaMod.LOGGER.debug("Estrutura não gerada, mensagens narrativas não enviadas.");
+        }
     }
 
     private static boolean shouldIgnoreEvent(PlayerEvent event) {
@@ -62,14 +64,7 @@ public class PlayerPlainsFirstArrivalRitualEvent {
     }
 
     public static boolean hasPlayerReceivedRitualDiary(ServerPlayer player) {
-        UUID id = player.getUUID();
-        if (SESSION_CACHE.contains(id)) return true;
-        boolean received = player.getPersistentData().getBoolean(PLAYER_RECEIVED_RITUAL_KEY);
-        if (received) {
-            SESSION_CACHE.add(id);
-            ArcanaMod.LOGGER.debug("Dados persistentes indicam que o jogador já recebeu o ritual.");
-        }
-        return received;
+        return player.getPersistentData().getBoolean(PLAYER_RECEIVED_RITUAL_KEY);
     }
 
     private static void markAsReceived(ServerPlayer player) {
@@ -91,30 +86,31 @@ public class PlayerPlainsFirstArrivalRitualEvent {
         ArcanaMod.LOGGER.debug("Primeiro sonho enviado.");
     }
 
-    private static void generateRitualStructure(ServerLevel level, BlockPos playerPos) {
+    private static boolean generateRitualStructure(ServerLevel level, BlockPos playerPos, ServerPlayer player) {
         ArcanaMod.LOGGER.debug("Tentando gerar estrutura ritualística.");
         DiaryWorldData state = DiaryWorldData.get(level);
         if (state.hasSpawned()) {
             ArcanaMod.LOGGER.debug("Ritual já foi gerado anteriormente. Abortando geração.");
-            return;
+            return false;
         }
         BlockPos base = findValidPlainsSpot(level, playerPos);
         if (base == null) {
             ArcanaMod.LOGGER.debug("Nenhum local válido encontrado para geração do ritual.");
-            return;
+            return false;
         }
         BlockPos surface = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, base);
         if (surface.getY() < MIN_Y || surface.getY() > MAX_Y) {
             ArcanaMod.LOGGER.debug("Local encontrado fora da faixa de altura permitida: {}", surface.getY());
-            return;
+            return false;
         }
         ArcanaMod.LOGGER.debug("Local válido encontrado em {}", surface);
         clearAbove(level, surface);
         ArcanaMod.LOGGER.debug("Área acima limpa.");
-        buildRitual(level, surface);
+        buildRitual(level, surface, player);
         ArcanaMod.LOGGER.debug("Estrutura ritualística construída.");
         state.setSpawned(surface);
         ArcanaMod.LOGGER.debug("Estado salvo informando que o ritual já foi gerado.");
+        return true;
     }
 
     private static BlockPos findValidPlainsSpot(ServerLevel level, BlockPos origin) {
@@ -161,11 +157,11 @@ public class PlayerPlainsFirstArrivalRitualEvent {
         return true;
     }
 
-    private static void buildRitual(ServerLevel level, BlockPos base) {
+    private static void buildRitual(ServerLevel level, BlockPos base, ServerPlayer player) {
         placeGround(level, base);
         placeMagicCircle(level, base);
         placeDetails(level, base);
-        placeChest(level, base);
+        placeChest(level, base, player);
     }
 
     private static void clearAbove(ServerLevel level, BlockPos chestPos) {
@@ -231,16 +227,17 @@ public class PlayerPlainsFirstArrivalRitualEvent {
         ArcanaMod.LOGGER.debug("Detalhes posicionados no círculo ritualístico.");
     }
 
-    private static void placeChest(ServerLevel level, BlockPos base) {
+    private static void placeChest(ServerLevel level, BlockPos base, ServerPlayer player) {
         level.setBlockAndUpdate(base, Blocks.CHEST.defaultBlockState());
         ArcanaMod.LOGGER.debug("Bau posicionado no centro do ritual em {}", base);
-        addDiary(level, base);
+        addDiary(level, base, player);
     }
 
-    private static void addDiary(Level level, BlockPos chestPos) {
+    private static void addDiary(Level level, BlockPos chestPos, ServerPlayer player) {
         if (level.getBlockEntity(chestPos) instanceof ChestBlockEntity chest) {
-            chest.setItem(13, new ItemStack(ArcanaMod.DIARY_KALIASTRUS.get()));
-            ArcanaMod.LOGGER.debug("Diário inserido no baú na posição {}", chestPos);
+            ItemStack diary = DiaryItem.createBoundDiary(player, DIARY_KALIASTRUS.get());
+            chest.setItem(13, diary);
+            ArcanaMod.LOGGER.debug("Diário vinculado inserido no baú na posição {}", chestPos);
         } else {
             ArcanaMod.LOGGER.debug("Falha ao inserir diário: baú não encontrado em {}", chestPos);
         }

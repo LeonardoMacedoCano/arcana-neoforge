@@ -24,7 +24,6 @@ public class DiaryPersistenceHandler {
     private static final String PLAYER_BOUND_KEY = "arcana.diary_bound";
     private static final Map<UUID, List<Integer>> PLAYER_MESSAGE_ORDER = new HashMap<>();
     private static final Random RANDOM = new Random();
-    private static final Set<UUID> SESSION_ALREADY_HAD_DIARY = new HashSet<>();
     private static final Map<UUID, Integer> DIARY_MISSING_TICKS = new HashMap<>();
     private static final int RETURN_DELAY_TICKS = 200;
 
@@ -65,11 +64,7 @@ public class DiaryPersistenceHandler {
     }
 
     public static boolean hasPlayerReceivedDiary(ServerPlayer player) {
-        UUID id = player.getUUID();
-        if (SESSION_ALREADY_HAD_DIARY.contains(id)) return true;
-        boolean received = player.getPersistentData().getBoolean(PLAYER_BOUND_KEY);
-        if (received) SESSION_ALREADY_HAD_DIARY.add(id);
-        return received;
+        return player.getPersistentData().getBoolean(PLAYER_BOUND_KEY);
     }
 
     private static void registerDiaryPickup(ServerPlayer player) {
@@ -81,12 +76,10 @@ public class DiaryPersistenceHandler {
 
     private static void markDiaryAsReceived(ServerPlayer player) {
         player.getPersistentData().putBoolean(PLAYER_BOUND_KEY, true);
-        SESSION_ALREADY_HAD_DIARY.add(player.getUUID());
     }
 
     public static boolean isDiaryBondActive(ServerPlayer player) {
-        return SESSION_ALREADY_HAD_DIARY.contains(player.getUUID()) ||
-                player.getPersistentData().getBoolean(PLAYER_BOUND_KEY);
+        return player.getPersistentData().getBoolean(PLAYER_BOUND_KEY);
     }
 
     private static void bindDiaryToPlayerIfHeld(ServerPlayer player) {

@@ -38,7 +38,7 @@ public class ArcanaMod {
     );
 
     public ArcanaMod(IEventBus modEventBus, ModContainer modContainer) {
-        LOGGER.debug("Inicializando Arcana Mod...");
+        LOGGER.info("Inicializando Arcana Mod...");
 
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::addCreative);
@@ -51,11 +51,11 @@ public class ArcanaMod {
 
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
 
-        LOGGER.debug("Registro básico concluído");
+        LOGGER.info("Registro básico concluído");
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
-        LOGGER.info("ARCANA MOD - Common Setup");
+        LOGGER.info("ARCANA MOD - Common Setup (roda em cliente E servidor)");
         LOGGER.info("Carregando sistema de sonhos...");
 
         event.enqueueWork(() -> {
@@ -66,7 +66,7 @@ public class ArcanaMod {
     }
 
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
-        // TODO
+        // TODO: Adicionar itens às abas criativas
     }
 
     @SubscribeEvent

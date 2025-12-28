@@ -141,7 +141,9 @@ public class DiaryScreen extends Screen {
 
     private void renderDiaryBackground(GuiGraphics graphics) {
         ResourceLocation background = isFrontCover() ? COVER_FRONT : isBackCover() ? COVER_BACK : PAGE_BACKGROUND;
-        graphics.blit(background, leftPos, topPos, 0, 0, TEXTURE_WIDTH, TEXTURE_HEIGHT, 256, 256);
+        int centerX = (this.width - 256) / 2;
+        int centerY = (this.height - 256) / 2;
+        graphics.blit(background, centerX, centerY, 0, 0, 256, 256, 256, 256);
     }
 
     private void renderPageContent(GuiGraphics graphics) {

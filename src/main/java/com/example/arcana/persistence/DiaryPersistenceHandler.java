@@ -29,16 +29,11 @@ public class DiaryPersistenceHandler {
     private static final int RETURN_DELAY_TICKS = 200;
 
     private static final Component[] MESSAGES = new Component[]{
-            Component.literal("Oi… você se afastou e me deixou sozinho.\nAinda tenho histórias para te contar.")
-                    .withStyle(ChatFormatting.LIGHT_PURPLE),
-            Component.literal("Ei… não importa onde estou, espero que não me perca agora.")
-                    .withStyle(ChatFormatting.DARK_PURPLE),
-            Component.literal("Estamos conectados de alguma forma.\nNão me deixe para trás.")
-                    .withStyle(ChatFormatting.DARK_PURPLE),
-            Component.literal("Mesmo que eu esteja longe, continuo com você.\nSempre voltarei.")
-                    .withStyle(ChatFormatting.LIGHT_PURPLE),
-            Component.literal("Não dá para fugir de mim tão fácil.\nAinda temos muito a compartilhar.")
-                    .withStyle(ChatFormatting.DARK_PURPLE)
+            Component.literal("Oi… você se afastou e me deixou sozinho.\nAinda tenho histórias para te contar.").withStyle(ChatFormatting.LIGHT_PURPLE),
+            Component.literal("Ei… não importa onde estou, espero que não me perca agora.").withStyle(ChatFormatting.DARK_PURPLE),
+            Component.literal("Estamos conectados de alguma forma.\nNão me deixe para trás.").withStyle(ChatFormatting.DARK_PURPLE),
+            Component.literal("Mesmo que eu esteja longe, continuo com você.\nSempre voltarei.").withStyle(ChatFormatting.LIGHT_PURPLE),
+            Component.literal("Não dá para fugir de mim tão fácil.\nAinda temos muito a compartilhar.").withStyle(ChatFormatting.DARK_PURPLE)
     };
 
     @SubscribeEvent
@@ -60,9 +55,13 @@ public class DiaryPersistenceHandler {
         if (!canReturnDiary(player)) return;
         if (playerIsHoldingItem(player)) return;
 
+        ArcanaMod.LOGGER.debug("[Diary] Recuperação iniciada para {}", player.getName().getString());
+
         removeAllDiariesFromWorldAndPlayer(player);
         sendDiaryReminderMessage(player);
         returnDiaryToPlayer(player);
+
+        ArcanaMod.LOGGER.debug("[Diary] Diário devolvido ao jogador {}", player.getName().getString());
     }
 
     public static boolean hasPlayerReceivedDiary(ServerPlayer player) {
@@ -76,7 +75,7 @@ public class DiaryPersistenceHandler {
     private static void registerDiaryPickup(ServerPlayer player) {
         if (!hasPlayerReceivedDiary(player) && playerHasDiary(player)) {
             markDiaryAsReceived(player);
-            ArcanaMod.LOGGER.debug("Jogador {} pegou o diário!", player.getName().getString());
+            ArcanaMod.LOGGER.debug("[Diary] Jogador {} vinculou-se ao diário", player.getName().getString());
         }
     }
 
@@ -95,15 +94,16 @@ public class DiaryPersistenceHandler {
     }
 
     private static boolean playerHasDiary(ServerPlayer player) {
-        return inventoryContainsDiary(player) ||
-                player.getOffhandItem().getItem() == ArcanaMod.DIARY_KALIASTRUS.get() ||
-                player.getMainHandItem().getItem() == ArcanaMod.DIARY_KALIASTRUS.get() ||
-                cursorHasDiary(player);
+        return inventoryContainsDiary(player)
+                || player.getOffhandItem().getItem() == ArcanaMod.DIARY_KALIASTRUS.get()
+                || player.getMainHandItem().getItem() == ArcanaMod.DIARY_KALIASTRUS.get()
+                || cursorHasDiary(player);
     }
 
     private static boolean inventoryContainsDiary(ServerPlayer player) {
         for (ItemStack stack : player.getInventory().items)
-            if (stack.getItem() == ArcanaMod.DIARY_KALIASTRUS.get()) return true;
+            if (stack.getItem() == ArcanaMod.DIARY_KALIASTRUS.get())
+                return true;
         return false;
     }
 
@@ -122,6 +122,7 @@ public class DiaryPersistenceHandler {
         DIARY_MISSING_TICKS.put(id, ticks);
         if (ticks < RETURN_DELAY_TICKS) return false;
         DIARY_MISSING_TICKS.remove(id);
+        ArcanaMod.LOGGER.debug("[Diary] Diário ausente tempo suficiente para {}", player.getName().getString());
         return true;
     }
 
@@ -130,6 +131,7 @@ public class DiaryPersistenceHandler {
     }
 
     private static void removeAllDiariesFromWorldAndPlayer(ServerPlayer player) {
+        ArcanaMod.LOGGER.debug("[Diary] Removendo diários do mundo e containers para {}", player.getName().getString());
         removeWorldDiaries(player);
         removeAllDiariesFromNearbyContainers(player);
         removeCursorDiary(player);
@@ -193,6 +195,7 @@ public class DiaryPersistenceHandler {
         DelayedMessageQueue queue = new DelayedMessageQueue(player, 20);
         queue.addMessage(msg);
         DelayedMessageHandler.addQueue(queue);
+        ArcanaMod.LOGGER.debug("[Diary] Mensagem de lembrança enviada para {}", player.getName().getString());
     }
 
     private static List<Integer> generateMessageOrder() {

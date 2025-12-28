@@ -31,24 +31,25 @@ public class PlayerPlainsFirstArrivalRitualEvent {
 
     private static final String PLAYER_RECEIVED_RITUAL_KEY = "arcana.diary_received";
     private static final Set<UUID> SESSION_CACHE = new HashSet<>();
-
     private static final int SEARCH_RADIUS = 120;
     private static final int SEARCH_STEP = 6;
-    private static final int AREA_CLEAR_SIZE = 10;
-    private static final int GROUND_RADIUS = 8;
+    private static final int AREA_MIN_OPEN_RADIUS = 12;
+    private static final int CLEAR_RADIUS = 9;
+    private static final int GROUND_RADIUS = 9;
     private static final int CIRCLE_RADIUS = 7;
+    private static final int MIN_Y = 50;
+    private static final int MAX_Y = 200;
 
     @SubscribeEvent
     public static void onPlayerTick(PlayerTickEvent.Post event) {
-        if (shouldIgnoreEvent(event)) {
-            return;
-        }
-
+        if (shouldIgnoreEvent(event)) return;
         ServerPlayer player = (ServerPlayer) event.getEntity();
-
+        ArcanaMod.LOGGER.debug("Evento PlayerTick processado para: {}", player.getName().getString());
         SESSION_CACHE.add(player.getUUID());
         markAsReceived(player);
+        ArcanaMod.LOGGER.debug("Marcado que o jogador já recebeu o ritual.");
         sendNarrativeMessages(player);
+        ArcanaMod.LOGGER.debug("Mensagens narrativas enfileiradas para envio.");
         generateRitualStructure(player.serverLevel(), player.blockPosition());
     }
 
@@ -62,17 +63,12 @@ public class PlayerPlainsFirstArrivalRitualEvent {
 
     public static boolean hasPlayerReceivedRitualDiary(ServerPlayer player) {
         UUID id = player.getUUID();
-
-        if (SESSION_CACHE.contains(id)) {
-            return true;
-        }
-
+        if (SESSION_CACHE.contains(id)) return true;
         boolean received = player.getPersistentData().getBoolean(PLAYER_RECEIVED_RITUAL_KEY);
-
         if (received) {
             SESSION_CACHE.add(id);
+            ArcanaMod.LOGGER.debug("Dados persistentes indicam que o jogador já recebeu o ritual.");
         }
-
         return received;
     }
 
@@ -81,71 +77,87 @@ public class PlayerPlainsFirstArrivalRitualEvent {
     }
 
     private static boolean isInPlains(ServerPlayer player) {
-        return player.serverLevel()
-                .getBiome(player.blockPosition())
-                .is(Biomes.PLAINS);
+        return player.serverLevel().getBiome(player.blockPosition()).is(Biomes.PLAINS);
     }
 
     private static void sendNarrativeMessages(ServerPlayer player) {
+        ArcanaMod.LOGGER.debug("Preparando mensagens narrativas do primeiro sonho para {}", player.getName().getString());
         DelayedMessageQueue queue = new DelayedMessageQueue(player, 40);
         queue.addMessage(Component.literal(player.getName().getString() + ",").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD));
         queue.addMessage(Component.literal("eu não conquistei O MUNDO...").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC));
         queue.addMessage(Component.literal("agora deixo meus últimos resquícios de existência contigo.").withStyle(ChatFormatting.DARK_PURPLE));
         queue.addMessage(Component.literal("ADEUS").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD));
         DelayedMessageHandler.addQueue(queue);
+        ArcanaMod.LOGGER.debug("Primeiro sonho enviado.");
     }
 
     private static void generateRitualStructure(ServerLevel level, BlockPos playerPos) {
+        ArcanaMod.LOGGER.debug("Tentando gerar estrutura ritualística.");
         DiaryWorldData state = DiaryWorldData.get(level);
-
         if (state.hasSpawned()) {
+            ArcanaMod.LOGGER.debug("Ritual já foi gerado anteriormente. Abortando geração.");
             return;
         }
-
         BlockPos base = findValidPlainsSpot(level, playerPos);
-        if (base == null) return;
-
+        if (base == null) {
+            ArcanaMod.LOGGER.debug("Nenhum local válido encontrado para geração do ritual.");
+            return;
+        }
         BlockPos surface = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, base);
-
+        if (surface.getY() < MIN_Y || surface.getY() > MAX_Y) {
+            ArcanaMod.LOGGER.debug("Local encontrado fora da faixa de altura permitida: {}", surface.getY());
+            return;
+        }
+        ArcanaMod.LOGGER.debug("Local válido encontrado em {}", surface);
+        clearAbove(level, surface);
+        ArcanaMod.LOGGER.debug("Área acima limpa.");
         buildRitual(level, surface);
-
+        ArcanaMod.LOGGER.debug("Estrutura ritualística construída.");
         state.setSpawned(surface);
+        ArcanaMod.LOGGER.debug("Estado salvo informando que o ritual já foi gerado.");
     }
 
-
     private static BlockPos findValidPlainsSpot(ServerLevel level, BlockPos origin) {
+        ArcanaMod.LOGGER.debug("Iniciando busca de terreno para ritual.");
         for (int r = SEARCH_STEP; r <= SEARCH_RADIUS; r += SEARCH_STEP)
             for (int x = -r; x <= r; x += SEARCH_STEP)
                 for (int z = -r; z <= r; z += SEARCH_STEP) {
                     BlockPos candidate = origin.offset(x, 0, z);
                     if (isGoodSpot(level, candidate)) {
-                        return level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, candidate);
+                        ArcanaMod.LOGGER.debug("Spot encontrado em {}", candidate);
+                        return level.getHeightmapPos(Heightmap.Types.WORLD_SURFACE, candidate);
                     }
                 }
-
         return null;
     }
 
     private static boolean isGoodSpot(ServerLevel level, BlockPos pos) {
         BlockPos surface = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos);
-        ResourceKey<Biome> biome = level.getBiome(surface).unwrapKey().orElse(null);
+        if (surface.getY() < MIN_Y || surface.getY() > MAX_Y) return false;
 
+        ResourceKey<Biome> biome = level.getBiome(surface).unwrapKey().orElse(null);
         if (biome == null || !biome.equals(Biomes.PLAINS)) return false;
 
-        return isFlatAndClear(level, surface);
+        BlockPos ground = surface.below();
+        var block = level.getBlockState(ground).getBlock();
+        if (!(block == Blocks.GRASS_BLOCK
+                || block == Blocks.DIRT
+                || block == Blocks.COARSE_DIRT
+                || block == Blocks.ROOTED_DIRT)) {
+            return false;
+        }
+
+        return hasOpenArea(level, surface);
     }
 
-    private static boolean isFlatAndClear(ServerLevel level, BlockPos center) {
-        int half = AREA_CLEAR_SIZE / 2;
+    private static boolean hasOpenArea(ServerLevel level, BlockPos center) {
         int baseY = center.getY();
-
-        for (int x = -half; x <= half; x++)
-            for (int z = -half; z <= half; z++) {
-                BlockPos surface = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, center.offset(x, 0, z));
-                if (Math.abs(surface.getY() - baseY) > 1) return false;
-                if (level.getBlockState(surface.below()).getBlock() == Blocks.WATER) return false;
+        for (int x = -AREA_MIN_OPEN_RADIUS; x <= AREA_MIN_OPEN_RADIUS; x++)
+            for (int z = -AREA_MIN_OPEN_RADIUS; z <= AREA_MIN_OPEN_RADIUS; z++) {
+                BlockPos check = center.offset(x, 0, z);
+                BlockPos surface = level.getHeightmapPos(Heightmap.Types.WORLD_SURFACE, check);
+                if (surface.getY() - baseY > 2) return false;
             }
-
         return true;
     }
 
@@ -154,6 +166,16 @@ public class PlayerPlainsFirstArrivalRitualEvent {
         placeMagicCircle(level, base);
         placeDetails(level, base);
         placeChest(level, base);
+    }
+
+    private static void clearAbove(ServerLevel level, BlockPos chestPos) {
+        for (int x = -CLEAR_RADIUS; x <= CLEAR_RADIUS; x++)
+            for (int z = -CLEAR_RADIUS; z <= CLEAR_RADIUS; z++)
+                for (int y = 0; y <= 25; y++) {
+                    BlockPos p = chestPos.offset(x, y, z);
+                    if (!level.isEmptyBlock(p))
+                        level.setBlockAndUpdate(p, Blocks.AIR.defaultBlockState());
+                }
     }
 
     private static void placeGround(ServerLevel level, BlockPos base) {
@@ -176,7 +198,6 @@ public class PlayerPlainsFirstArrivalRitualEvent {
             for (int z = -CIRCLE_RADIUS; z <= CIRCLE_RADIUS; z++) {
                 double dist = Math.sqrt(x * x + z * z);
                 BlockPos pos = base.offset(x, -1, z);
-
                 if (dist <= CIRCLE_RADIUS && dist >= CIRCLE_RADIUS - 1)
                     level.setBlockAndUpdate(pos, Blocks.POLISHED_BLACKSTONE_BRICKS.defaultBlockState());
                 else if (dist <= CIRCLE_RADIUS - 2 && dist >= CIRCLE_RADIUS - 3)
@@ -192,20 +213,36 @@ public class PlayerPlainsFirstArrivalRitualEvent {
     }
 
     private static void placeDetails(ServerLevel level, BlockPos base) {
-        level.setBlockAndUpdate(base.offset(6, 0, 6), Blocks.POLISHED_BLACKSTONE_BRICKS.defaultBlockState());
-        level.setBlockAndUpdate(base.offset(-6, 0, 6), Blocks.POLISHED_BLACKSTONE_BRICKS.defaultBlockState());
-        level.setBlockAndUpdate(base.offset(6, 0, -6), Blocks.POLISHED_BLACKSTONE_BRICKS.defaultBlockState());
-        level.setBlockAndUpdate(base.offset(-6, 0, -6), Blocks.POLISHED_BLACKSTONE_BRICKS.defaultBlockState());
+        BlockPos p1 = base.offset(6, 0, 6);
+        BlockPos p2 = base.offset(-6, 0, 6);
+        BlockPos p3 = base.offset(6, 0, -6);
+        BlockPos p4 = base.offset(-6, 0, -6);
+
+        level.setBlockAndUpdate(p1, Blocks.POLISHED_BLACKSTONE_BRICK_WALL.defaultBlockState());
+        level.setBlockAndUpdate(p2, Blocks.POLISHED_BLACKSTONE_BRICK_WALL.defaultBlockState());
+        level.setBlockAndUpdate(p3, Blocks.POLISHED_BLACKSTONE_BRICK_WALL.defaultBlockState());
+        level.setBlockAndUpdate(p4, Blocks.POLISHED_BLACKSTONE_BRICK_WALL.defaultBlockState());
+
+        level.setBlockAndUpdate(p1.above(), Blocks.SOUL_TORCH.defaultBlockState());
+        level.setBlockAndUpdate(p2.above(), Blocks.SOUL_TORCH.defaultBlockState());
+        level.setBlockAndUpdate(p3.above(), Blocks.SOUL_TORCH.defaultBlockState());
+        level.setBlockAndUpdate(p4.above(), Blocks.SOUL_TORCH.defaultBlockState());
+
+        ArcanaMod.LOGGER.debug("Detalhes posicionados no círculo ritualístico.");
     }
 
     private static void placeChest(ServerLevel level, BlockPos base) {
         level.setBlockAndUpdate(base, Blocks.CHEST.defaultBlockState());
+        ArcanaMod.LOGGER.debug("Bau posicionado no centro do ritual em {}", base);
         addDiary(level, base);
     }
 
     private static void addDiary(Level level, BlockPos chestPos) {
         if (level.getBlockEntity(chestPos) instanceof ChestBlockEntity chest) {
             chest.setItem(13, new ItemStack(ArcanaMod.DIARY_KALIASTRUS.get()));
+            ArcanaMod.LOGGER.debug("Diário inserido no baú na posição {}", chestPos);
+        } else {
+            ArcanaMod.LOGGER.debug("Falha ao inserir diário: baú não encontrado em {}", chestPos);
         }
     }
 }

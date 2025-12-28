@@ -1,5 +1,6 @@
 package com.example.arcana.client.gui;
 
+import com.example.arcana.ArcanaMod;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.GuiGraphics;
@@ -14,35 +15,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DiaryScreen extends Screen {
-
-    private static final ResourceLocation COVER_FRONT =
-            ResourceLocation.fromNamespaceAndPath("arcana", "textures/item/gui/diary_cover_front.png");
-    private static final ResourceLocation COVER_BACK =
-            ResourceLocation.fromNamespaceAndPath("arcana", "textures/item/gui/diary_cover_back.png");
-    private static final ResourceLocation PAGE_BACKGROUND =
-            ResourceLocation.fromNamespaceAndPath("arcana", "textures/item/gui/diary_page.png");
-
+    private static final ResourceLocation COVER_FRONT = ResourceLocation.fromNamespaceAndPath("arcana", "textures/item/gui/diary_cover_front.png");
+    private static final ResourceLocation COVER_BACK = ResourceLocation.fromNamespaceAndPath("arcana", "textures/item/gui/diary_cover_back.png");
+    private static final ResourceLocation PAGE_BACKGROUND = ResourceLocation.fromNamespaceAndPath("arcana", "textures/item/gui/diary_page.png");
     private static final int TEXTURE_WIDTH = 174;
     private static final int TEXTURE_HEIGHT = 256;
-
     private static final int TEXT_MARGIN = 15;
     private static final int TEXT_WIDTH = TEXTURE_WIDTH - (TEXT_MARGIN * 2);
     private static final int TEXT_HEIGHT = TEXTURE_HEIGHT - (TEXT_MARGIN * 2);
-    private static final int LINE_HEIGHT = 13;
+    private static final int LINE_HEIGHT = 11;
     private static final int MAX_LINES_PER_PAGE = TEXT_HEIGHT / LINE_HEIGHT;
-
-    private static final int TEXT_COLOR = 0x2C1810;
+    private static final int TEXT_COLOR = 0x56463f;
     private static final int PAGE_NUMBER_COLOR = 0x6B5744;
-
     private static final float FADE_SPEED = 0.1F;
 
     private int leftPos;
     private int topPos;
-
     private int currentPage = 0;
     private List<List<FormattedCharSequence>> contentPages;
     private int totalPages;
-
     private float pageAlpha = 0.0F;
 
     public DiaryScreen() {
@@ -52,25 +43,24 @@ public class DiaryScreen extends Screen {
     @Override
     protected void init() {
         super.init();
-
         this.leftPos = (this.width - TEXTURE_WIDTH) / 2;
         this.topPos = (this.height - TEXTURE_HEIGHT) / 2;
 
         if (contentPages == null) {
+            ArcanaMod.LOGGER.debug("Processando conteúdo do diário");
             this.contentPages = processContentIntoPages();
-            this.totalPages = 1 + contentPages.size() + 1;
+            this.totalPages = contentPages.size() + 2;
+            ArcanaMod.LOGGER.debug("Total de páginas calculadas: {}", this.totalPages);
         }
     }
 
     private List<List<FormattedCharSequence>> processContentIntoPages() {
         List<List<FormattedCharSequence>> pages = new ArrayList<>();
         List<FormattedCharSequence> current = new ArrayList<>();
-
         String[] content = DiaryContent.getContent();
 
         for (String paragraph : content) {
             List<FormattedCharSequence> wrapped = this.font.split(Component.literal(paragraph), TEXT_WIDTH);
-
             for (FormattedCharSequence line : wrapped) {
                 if (current.size() >= MAX_LINES_PER_PAGE) {
                     pages.add(new ArrayList<>(current));
@@ -78,7 +68,6 @@ public class DiaryScreen extends Screen {
                 }
                 current.add(line);
             }
-
             if (!paragraph.isEmpty() && current.size() < MAX_LINES_PER_PAGE) {
                 current.add(FormattedCharSequence.EMPTY);
             }
@@ -88,6 +77,7 @@ public class DiaryScreen extends Screen {
             pages.add(current);
         }
 
+        ArcanaMod.LOGGER.debug("Páginas de conteúdo geradas: {}", pages.size());
         return pages;
     }
 
@@ -95,6 +85,7 @@ public class DiaryScreen extends Screen {
         if (currentPage > 0) {
             currentPage--;
             pageAlpha = 0.0F;
+            ArcanaMod.LOGGER.debug("Página anterior: {}", currentPage);
             playPageTurnSound();
         }
     }
@@ -103,6 +94,7 @@ public class DiaryScreen extends Screen {
         if (currentPage < totalPages - 1) {
             currentPage++;
             pageAlpha = 0.0F;
+            ArcanaMod.LOGGER.debug("Próxima página: {}", currentPage);
             playPageTurnSound();
         }
     }
@@ -128,6 +120,7 @@ public class DiaryScreen extends Screen {
 
     @Override
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+        renderBackgroundBlur(graphics);
         renderDiaryBackground(graphics);
 
         if (pageAlpha < 1.0F) {
@@ -142,15 +135,13 @@ public class DiaryScreen extends Screen {
         super.render(graphics, mouseX, mouseY, partialTicks);
     }
 
-    private void renderDiaryBackground(GuiGraphics graphics) {
-        ResourceLocation background =
-                isFrontCover() ? COVER_FRONT :
-                        isBackCover() ? COVER_BACK :
-                                PAGE_BACKGROUND;
+    private void renderBackgroundBlur(GuiGraphics graphics) {
+        graphics.fill(0, 0, this.width, this.height, 0xA0000000);
+    }
 
-        graphics.blit(background, leftPos, topPos, 0, 0,
-                TEXTURE_WIDTH, TEXTURE_HEIGHT,
-                TEXTURE_WIDTH, TEXTURE_HEIGHT);
+    private void renderDiaryBackground(GuiGraphics graphics) {
+        ResourceLocation background = isFrontCover() ? COVER_FRONT : isBackCover() ? COVER_BACK : PAGE_BACKGROUND;
+        graphics.blit(background, leftPos, topPos, 0, 0, TEXTURE_WIDTH, TEXTURE_HEIGHT, 256, 256);
     }
 
     private void renderPageContent(GuiGraphics graphics) {
@@ -170,7 +161,6 @@ public class DiaryScreen extends Screen {
     private void renderPageNumber(GuiGraphics graphics) {
         int contentPageNumber = currentPage;
         int totalContentPages = totalPages - 2;
-
         String text = contentPageNumber + " / " + totalContentPages;
         int width = this.font.width(text);
 
@@ -227,6 +217,7 @@ public class DiaryScreen extends Screen {
 
         if (page < minPage || page > maxPage) return false;
 
+        ArcanaMod.LOGGER.debug("Indo para página: {}", page);
         currentPage = page;
         pageAlpha = 0.0F;
         playPageTurnSound();

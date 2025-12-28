@@ -1,5 +1,6 @@
 package com.example.arcana;
 
+import com.example.arcana.dreams.DreamRegistry;
 import com.example.arcana.item.DiaryItem;
 
 import org.slf4j.Logger;
@@ -23,6 +24,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 @Mod(ArcanaMod.MODID)
 public class ArcanaMod {
+
     public static final String MODID = "arcana";
     public static final Logger LOGGER = LogUtils.getLogger();
 
@@ -36,7 +38,10 @@ public class ArcanaMod {
     );
 
     public ArcanaMod(IEventBus modEventBus, ModContainer modContainer) {
+        LOGGER.debug("Inicializando Arcana Mod...");
+
         modEventBus.addListener(this::commonSetup);
+        modEventBus.addListener(this::addCreative);
 
         BLOCKS.register(modEventBus);
         ITEMS.register(modEventBus);
@@ -44,17 +49,24 @@ public class ArcanaMod {
 
         NeoForge.EVENT_BUS.register(this);
 
-        modEventBus.addListener(this::addCreative);
-
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+
+        LOGGER.debug("Registro básico concluído");
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
         LOGGER.info("ARCANA MOD - Common Setup");
-        LOGGER.info("Loading Diary of Kaliastrus...");
+        LOGGER.info("Carregando sistema de sonhos...");
+
+        event.enqueueWork(() -> {
+            LOGGER.debug("Inicializando DreamRegistry...");
+            DreamRegistry.init();
+            LOGGER.debug("DreamRegistry inicializado com sucesso");
+        });
     }
 
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
+        // TODO
     }
 
     @SubscribeEvent

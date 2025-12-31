@@ -5,6 +5,7 @@ import com.example.arcana.item.DiaryItem;
 import com.example.arcana.persistence.DiaryWorldData;
 import com.example.arcana.util.DelayedMessageHandler;
 import com.example.arcana.util.DelayedMessageQueue;
+import com.example.arcana.util.PlayerPersistentDataUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -64,11 +65,11 @@ public class PlayerPlainsFirstArrivalRitualEvent {
     }
 
     public static boolean hasPlayerReceivedRitualDiary(ServerPlayer player) {
-        return player.getPersistentData().getBoolean(PLAYER_RECEIVED_RITUAL_KEY);
+        return PlayerPersistentDataUtil.getBoolean(player, PLAYER_RECEIVED_RITUAL_KEY);
     }
 
     private static void markAsReceived(ServerPlayer player) {
-        player.getPersistentData().putBoolean(PLAYER_RECEIVED_RITUAL_KEY, true);
+        PlayerPersistentDataUtil.setBoolean(player, PLAYER_RECEIVED_RITUAL_KEY, true);
     }
 
     private static boolean isInPlains(ServerPlayer player) {
@@ -76,14 +77,13 @@ public class PlayerPlainsFirstArrivalRitualEvent {
     }
 
     private static void sendNarrativeMessages(ServerPlayer player) {
-        ArcanaMod.LOGGER.debug("Preparando mensagens narrativas do primeiro sonho para {}", player.getName().getString());
+        ArcanaMod.LOGGER.debug("Preparando mensagens narrativas para {}", player.getName().getString());
         DelayedMessageQueue queue = new DelayedMessageQueue(player, 40);
         queue.addMessage(Component.literal(player.getName().getString() + ",").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD));
         queue.addMessage(Component.literal("eu não conquistei O MUNDO...").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC));
         queue.addMessage(Component.literal("agora deixo meus últimos resquícios de existência contigo.").withStyle(ChatFormatting.DARK_PURPLE));
         queue.addMessage(Component.literal("ADEUS").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD));
         DelayedMessageHandler.addQueue(queue);
-        ArcanaMod.LOGGER.debug("Primeiro sonho enviado.");
     }
 
     private static boolean generateRitualStructure(ServerLevel level, BlockPos playerPos, ServerPlayer player) {

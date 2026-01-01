@@ -1,8 +1,8 @@
-package com.example.arcana.dreams.types;
+package com.example.arcana.systems.dreams.types;
 
 import com.example.arcana.ArcanaMod;
-import com.example.arcana.dreams.DreamType;
-import com.example.arcana.persistence.DiaryWorldData;
+import com.example.arcana.systems.dreams.DreamType;
+import com.example.arcana.systems.diary.DiaryWorldData;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -11,7 +11,7 @@ import net.minecraft.server.level.ServerPlayer;
 
 import java.util.*;
 
-import static com.example.arcana.persistence.DiaryPersistenceHandler.isDiaryBondActive;
+import static com.example.arcana.systems.diary.DiaryPersistenceHandler.isDiaryBondActive;
 
 public class DiaryGuideDream implements DreamType {
 

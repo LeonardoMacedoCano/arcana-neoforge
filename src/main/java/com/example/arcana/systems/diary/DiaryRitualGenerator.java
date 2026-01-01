@@ -1,8 +1,7 @@
-package com.example.arcana.events;
+package com.example.arcana.systems.diary;
 
 import com.example.arcana.ArcanaMod;
 import com.example.arcana.item.DiaryItem;
-import com.example.arcana.persistence.DiaryWorldData;
 import com.example.arcana.util.DelayedMessageHandler;
 import com.example.arcana.util.DelayedMessageQueue;
 import com.example.arcana.util.PlayerPersistentDataUtil;
@@ -19,15 +18,11 @@ import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
-import static com.example.arcana.ArcanaMod.DIARY_KALIASTRUS;
+import static com.example.arcana.registry.ModItems.DIARY_KALIASTRUS;
 
-@EventBusSubscriber(modid = ArcanaMod.MODID)
-public class PlayerPlainsFirstArrivalRitualEvent {
+public class DiaryRitualGenerator {
 
     private static final String PLAYER_RECEIVED_RITUAL_KEY = "arcana.diary_received";
     private static final int SEARCH_RADIUS = 120;
@@ -39,10 +34,10 @@ public class PlayerPlainsFirstArrivalRitualEvent {
     private static final int MIN_Y = 50;
     private static final int MAX_Y = 200;
 
-    @SubscribeEvent
-    public static void onPlayerTick(PlayerTickEvent.Post event) {
+    public static void tryGenerateRitual(PlayerEvent event) {
         if (shouldIgnoreEvent(event)) return;
         ServerPlayer player = (ServerPlayer) event.getEntity();
+
         ArcanaMod.LOGGER.debug("Evento PlayerTick processado para: {}", player.getName().getString());
 
         boolean structureGenerated = generateRitualStructure(player.serverLevel(), player.blockPosition(), player);

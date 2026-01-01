@@ -47,14 +47,6 @@ public class DiaryItem extends Item {
         return stack;
     }
 
-    public static UUID getDiaryUUID(ItemStack stack) {
-        if (!(stack.getItem() instanceof DiaryItem)) return null;
-        CustomData data = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
-        CompoundTag tag = data.copyTag();
-        if (!tag.hasUUID(KEY)) return null;
-        return tag.getUUID(KEY);
-    }
-
     public static UUID getBoundPlayer(ItemStack stack) {
         if (!(stack.getItem() instanceof DiaryItem)) return null;
         CustomData data = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);

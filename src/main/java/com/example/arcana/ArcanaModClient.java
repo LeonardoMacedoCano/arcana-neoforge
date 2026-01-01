@@ -14,10 +14,6 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 @EventBusSubscriber(modid = ArcanaMod.MODID, value = Dist.CLIENT)
 public class ArcanaModClient {
 
-    public ArcanaModClient(ModContainer container) {
-        container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
-    }
-
     @SubscribeEvent
     static void onClientSetup(FMLClientSetupEvent event) {
         String playerName = Minecraft.getInstance().getUser().getName();

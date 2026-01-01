@@ -1,4 +1,4 @@
-package com.example.arcana.persistence;
+package com.example.arcana.systems.diary;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;

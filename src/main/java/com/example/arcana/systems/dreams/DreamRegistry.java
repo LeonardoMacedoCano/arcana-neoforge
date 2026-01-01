@@ -1,7 +1,7 @@
-package com.example.arcana.dreams;
+package com.example.arcana.systems.dreams;
 
 import com.example.arcana.ArcanaMod;
-import com.example.arcana.dreams.types.DiaryGuideDream;
+import com.example.arcana.systems.dreams.types.DiaryGuideDream;
 
 public class DreamRegistry {
 

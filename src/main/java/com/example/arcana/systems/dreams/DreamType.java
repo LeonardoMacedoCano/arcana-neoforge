@@ -1,4 +1,4 @@
-package com.example.arcana.dreams;
+package com.example.arcana.systems.dreams;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;

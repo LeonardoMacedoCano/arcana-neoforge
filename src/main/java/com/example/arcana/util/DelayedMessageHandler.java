@@ -1,13 +1,8 @@
 package com.example.arcana.util;
 
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
-
 import java.util.LinkedList;
 import java.util.List;
 
-@EventBusSubscriber
 public class DelayedMessageHandler {
 
     private static final List<DelayedMessageQueue> QUEUES = new LinkedList<>();
@@ -16,8 +11,7 @@ public class DelayedMessageHandler {
         QUEUES.add(queue);
     }
 
-    @SubscribeEvent
-    public static void onServerTick(ServerTickEvent.Post event) {
+    public static void tick() {
         QUEUES.removeIf(DelayedMessageQueue::tick);
     }
 }

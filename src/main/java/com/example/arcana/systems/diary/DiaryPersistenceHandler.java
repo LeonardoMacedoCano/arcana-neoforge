@@ -1,6 +1,7 @@
-package com.example.arcana.persistence;
+package com.example.arcana.systems.diary;
 
 import com.example.arcana.ArcanaMod;
+import com.example.arcana.registry.ModItems;
 import com.example.arcana.util.DelayedMessageHandler;
 import com.example.arcana.util.DelayedMessageQueue;
 import com.example.arcana.util.PlayerPersistentDataUtil;
@@ -193,11 +194,11 @@ public class DiaryPersistenceHandler {
     }
 
     private static boolean isDiary(ItemStack stack) {
-        return stack.getItem() == ArcanaMod.DIARY_KALIASTRUS.get();
+        return stack.getItem() == ModItems.DIARY_KALIASTRUS.get();
     }
 
     private static void giveDiary(ServerPlayer player) {
-        player.getInventory().add(new ItemStack(ArcanaMod.DIARY_KALIASTRUS.get()));
+        player.getInventory().add(new ItemStack(ModItems.DIARY_KALIASTRUS.get()));
         PlayerPersistentDataUtil.setBoolean(player, PLAYER_BOUND_KEY, true);
         log(player, "Jogador recebeu diário no inventário");
     }

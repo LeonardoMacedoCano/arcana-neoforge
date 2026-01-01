@@ -12,25 +12,21 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.item.ItemTossEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerContainerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 import java.util.*;
 
-@EventBusSubscriber(modid = ArcanaMod.MODID)
 public class DiaryPersistenceHandler {
 
     private static final String PLAYER_BOUND_KEY = "arcana.diary_bound";
     private static final Map<UUID, Deque<Integer>> PLAYER_MESSAGE_ORDER = new HashMap<>();
     private static final Random RANDOM = new Random();
-    private static final Set<UUID> NEEDS_DIARY_RETURN = new HashSet<>();
     private static final Map<UUID, Long> SCHEDULED_RETURNS = new HashMap<>();
     private static final int RETURN_DELAY_TICKS = 100;
-
     private static final Map<UUID, TrackedDrop> TRACKED_DROPS = new HashMap<>();
-
     private record TrackedDrop(UUID owner, UUID entityUuid, long expireTick) {}
 
     private static final Component[] MESSAGES = new Component[]{
@@ -41,62 +37,29 @@ public class DiaryPersistenceHandler {
             Component.literal("Não dá para fugir de mim tão fácil.\nAinda temos muito a compartilhar.").withStyle(ChatFormatting.DARK_PURPLE)
     };
 
-    @SubscribeEvent
-    public static void onItemToss(ItemTossEvent event) {
-
-        if (!(event.getPlayer() instanceof ServerPlayer player))
-            return;
+    public static void handleItemToss(ItemTossEvent event) {
+        if (!(event.getPlayer() instanceof ServerPlayer player)) return;
 
         ItemEntity entity = event.getEntity();
         ItemStack stack = entity.getItem();
+        if (!isDiary(stack)) return;
 
-        if (!isDiary(stack))
-            return;
-
-        long expireTick = player.serverLevel()
-                .getServer()
-                .getTickCount() + RETURN_DELAY_TICKS;
-
-        TRACKED_DROPS.put(
-                entity.getUUID(),
-                new TrackedDrop(
-                        player.getUUID(),
-                        entity.getUUID(),
-                        expireTick
-                )
-        );
-
+        long expireTick = player.serverLevel().getServer().getTickCount() + RETURN_DELAY_TICKS;
+        TRACKED_DROPS.put(entity.getUUID(), new TrackedDrop(player.getUUID(), entity.getUUID(), expireTick));
         log(player, "Jogador jogou o diário — item registrado para rastreamento");
     }
 
-    @SubscribeEvent
-    public static void onPlayerDeathDrops(net.neoforged.neoforge.event.entity.living.LivingDropsEvent event) {
+    public static void handlePlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
-
-        event.getDrops().removeIf(drop -> {
-            if (!isDiary(drop.getItem())) return false;
-            NEEDS_DIARY_RETURN.add(player.getUUID());
-            drop.discard();
-            log(player, "Removendo diário na morte");
-            return true;
-        });
+        restoreDiaryIfBondedAndMissing(player);
     }
 
-    @SubscribeEvent
-    public static void onPlayerRespawn(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerRespawnEvent event) {
+    public static void handlePlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
-        if (!NEEDS_DIARY_RETURN.remove(player.getUUID())) return;
-
-        log(player, "Agendando diário após respawn");
-
-        player.serverLevel().getServer().execute(() -> {
-            scheduleDiaryReturn(player);
-            sendDiaryReminderMessage(player);
-        });
+        restoreDiaryIfBondedAndMissing(player);
     }
 
-    @SubscribeEvent
-    public static void onContainerClose(net.neoforged.neoforge.event.entity.player.PlayerContainerEvent.Close event) {
+    public static void handleContainerClose(PlayerContainerEvent.Close event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         if (!isDiaryBondActive(player)) return;
 
@@ -104,56 +67,43 @@ public class DiaryPersistenceHandler {
             if (slot.hasItem() && isDiary(slot.getItem()) && !(slot.container instanceof Inventory)) {
                 slot.set(ItemStack.EMPTY);
                 slot.setChanged();
-                scheduleDiaryReturn(player);
-                sendDiaryReminderMessage(player);
+                ensureDiaryReturnScheduled(player);
                 log(player, "Removendo diário do container fechado");
             }
         });
     }
 
-    @SubscribeEvent
-    public static void onServerTick(ServerTickEvent.Post event) {
+    public static void handleServerTick(ServerTickEvent.Post event) {
         long tick = event.getServer().getTickCount();
-
         processTrackedDrops(event, tick);
         processScheduledReturns(event, tick);
         checkDiaryBondForAllPlayers(event);
     }
 
+    private static void restoreDiaryIfBondedAndMissing(ServerPlayer player) {
+        if (!isDiaryBondActive(player) || playerHasDiary(player)) return;
+        ensureDiaryReturnScheduled(player);
+    }
+
     private static void processTrackedDrops(ServerTickEvent.Post event, long tick) {
-
         TRACKED_DROPS.values().removeIf(drop -> {
-
             var level = event.getServer().overworld();
             ItemEntity entity = (ItemEntity) level.getEntity(drop.entityUuid());
 
             if (entity == null) {
-                ServerPlayer owner = event.getServer()
-                        .getPlayerList()
-                        .getPlayer(drop.owner());
-
+                ServerPlayer owner = event.getServer().getPlayerList().getPlayer(drop.owner());
                 if (owner != null && !playerHasDiary(owner)) {
-                    giveDiary(owner);
-                    sendDiaryReminderMessage(owner);
-                    log(owner, "Diário voltou porque foi destruído");
+                    giveDiaryWithReminder(owner, "Diário voltou porque foi destruído");
                 }
-
                 return true;
             }
 
-            if (drop.expireTick() > tick)
-                return false;
+            if (drop.expireTick() > tick) return false;
 
             entity.discard();
-
-            ServerPlayer owner = event.getServer()
-                    .getPlayerList()
-                    .getPlayer(drop.owner());
-
+            ServerPlayer owner = event.getServer().getPlayerList().getPlayer(drop.owner());
             if (owner != null && !playerHasDiary(owner)) {
-                giveDiary(owner);
-                sendDiaryReminderMessage(owner);
-                log(owner, "Diário voltou após tempo expirar");
+                giveDiaryWithReminder(owner, "Diário voltou após tempo expirar");
             }
 
             return true;
@@ -163,15 +113,8 @@ public class DiaryPersistenceHandler {
     private static void processScheduledReturns(ServerTickEvent.Post event, long tick) {
         SCHEDULED_RETURNS.entrySet().removeIf(e -> {
             if (e.getValue() > tick) return false;
-
-            ServerPlayer p = event.getServer()
-                    .getPlayerList()
-                    .getPlayer(e.getKey());
-
-            if (p != null && !playerHasDiary(p)) {
-                giveDiary(p);
-            }
-
+            ServerPlayer p = event.getServer().getPlayerList().getPlayer(e.getKey());
+            if (p != null && !playerHasDiary(p)) giveDiary(p);
             return true;
         });
     }
@@ -203,6 +146,12 @@ public class DiaryPersistenceHandler {
         log(player, "Jogador recebeu diário no inventário");
     }
 
+    private static void giveDiaryWithReminder(ServerPlayer player, String logText) {
+        giveDiary(player);
+        sendDiaryReminderMessage(player);
+        log(player, logText);
+    }
+
     private static boolean playerHasDiary(ServerPlayer player) {
         return player.getInventory().items.stream().anyMatch(DiaryPersistenceHandler::isDiary)
                 || isDiary(player.getOffhandItem())
@@ -227,7 +176,6 @@ public class DiaryPersistenceHandler {
         DelayedMessageQueue queue = new DelayedMessageQueue(player, 20);
         queue.addMessage(MESSAGES[msgIndex]);
         DelayedMessageHandler.addQueue(queue);
-
         log(player, "Mensagem de lembrança enviada");
     }
 
@@ -235,6 +183,13 @@ public class DiaryPersistenceHandler {
         List<Integer> list = Arrays.asList(0, 1, 2, 3, 4);
         Collections.shuffle(list, RANDOM);
         return new ArrayDeque<>(list);
+    }
+
+    private static void ensureDiaryReturnScheduled(ServerPlayer player) {
+        player.serverLevel().getServer().execute(() -> {
+            scheduleDiaryReturn(player);
+            sendDiaryReminderMessage(player);
+        });
     }
 
     private static void scheduleDiaryReturn(ServerPlayer player) {

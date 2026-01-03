@@ -1,6 +1,6 @@
 package com.example.arcana.systems.dreams;
 
-import com.example.arcana.ArcanaMod;
+import com.example.arcana.util.ArcanaLog;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -8,33 +8,33 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DreamManager {
-
+    private static final String MODULE = "DREAM_MANAGER";
     private static final List<DreamType> DREAMS = new ArrayList<>();
 
     public static void register(DreamType dream) {
-        ArcanaMod.LOGGER.debug("Registrando tipo de sonho: {}", dream.getName());
+        ArcanaLog.debug(MODULE, "Registering dream type: {}", dream.getName());
         DREAMS.add(dream);
     }
 
     public static void handleDreams(ServerPlayer player) {
         ServerLevel level = player.serverLevel();
 
-        ArcanaMod.LOGGER.debug("Processando sonhos para jogador {}", player.getName().getString());
+        ArcanaLog.debug(MODULE, "Processing dreams for player {}", player.getName().getString());
 
         for (DreamType dream : DREAMS) {
-            ArcanaMod.LOGGER.debug("Verificando condição do sonho: {}", dream.getName());
+            ArcanaLog.debug(MODULE, "Checking dream condition: {}", dream.getName());
 
             try {
                 if (dream.shouldTrigger(player, level)) {
-                    ArcanaMod.LOGGER.debug("Condição atendida para: {}", dream.getName());
+                    ArcanaLog.debug(MODULE, "Condition met for {}", dream.getName());
                     dream.runDream(player, level);
                     return;
                 }
             } catch (Exception e) {
-                ArcanaMod.LOGGER.error("Erro ao processar sonho {}: {}", dream.getName(), e.getMessage());
+                ArcanaLog.error(MODULE, "Error while processing dream {}: {}", dream.getName(), e.getMessage());
             }
         }
 
-        ArcanaMod.LOGGER.debug("Nenhum sonho acionado para {}", player.getName().getString());
+        ArcanaLog.debug(MODULE, "No dreams triggered for {}", player.getName().getString());
     }
 }

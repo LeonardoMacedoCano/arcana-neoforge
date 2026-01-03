@@ -1,8 +1,8 @@
 package com.example.arcana.systems.dreams.types;
 
-import com.example.arcana.ArcanaMod;
 import com.example.arcana.systems.dreams.DreamType;
 import com.example.arcana.systems.diary.DiaryWorldData;
+import com.example.arcana.util.ArcanaLog;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -14,18 +14,15 @@ import java.util.*;
 import static com.example.arcana.systems.diary.DiaryPersistenceHandler.isDiaryBondActive;
 
 public class DiaryGuideDream implements DreamType {
-
-    private static final String FIRST_DREAM_MSG =
-            "Essa noite sonhei com números... %s.\nNão faço ideia do que significa!";
-
+    private static final String MODULE = "DIARY_GUIDE_DREAM";
+    private static final String FIRST_DREAM_MSG = "Tonight I dreamed of numbers... %s.\nI have no idea what they mean!";
     private static final String[] DREAM_MSGS = {
-            "De novo sonhei com os números %s.\nAlgo me diz que estão relacionados à planície...",
-            "Os números %s voltaram no meu sonho.\nPreciso descobrir o que representam.",
-            "Outra noite com os números %s em minha mente.\nSinto que é um caminho a seguir.",
-            "Mais uma vez os números %s aparecem.\nEles parecem indicar algo importante.",
-            "Sonhei novamente com %s.\nAlgo me aguarda na estrutura da planície."
+            "Again I dreamed of the numbers %s.\nSomething tells me they are related to the plains...",
+            "The numbers %s appeared again in my dream.\nI need to discover what they represent.",
+            "Another night haunted by %s.\nI feel like they point to a path.",
+            "Once again the numbers %s appeared.\nThey seem to indicate something important.",
+            "I dreamed again of %s.\nSomething awaits me in the structure on the plains."
     };
-
     private static final Map<UUID, List<Integer>> ORDER = new HashMap<>();
     private static final Random RNG = new Random();
 
@@ -36,29 +33,28 @@ public class DiaryGuideDream implements DreamType {
 
     @Override
     public boolean shouldTrigger(ServerPlayer player, ServerLevel level) {
-        ArcanaMod.LOGGER.debug("Processando condição do diário para {}", player.getName().getString());
+        ArcanaLog.debug(MODULE, "Processing diary trigger condition for {}", player.getName().getString());
 
         DiaryWorldData data = DiaryWorldData.get(level);
 
         if (!data.hasSpawned()) {
-            ArcanaMod.LOGGER.debug("Estrutura do diário ainda não foi gerada.");
+            ArcanaLog.debug(MODULE, "Diary structure has not spawned yet");
             return false;
         }
 
         if (isDiaryBondActive(player)) {
-            ArcanaMod.LOGGER.debug("Jogador {} já possui o diário.", player.getName().getString());
+            ArcanaLog.debug(MODULE, "Player {} already owns the diary", player.getName().getString());
             return false;
         }
 
         boolean ok = data.getStructurePos() != null;
-
-        ArcanaMod.LOGGER.debug("Diário pode gerar sonho? {}", ok);
+        ArcanaLog.debug(MODULE, "Can diary dream trigger? {}", ok);
         return ok;
     }
 
     @Override
     public void runDream(ServerPlayer player, ServerLevel level) {
-        ArcanaMod.LOGGER.debug("Processando conteúdo do diário para {}", player.getName().getString());
+        ArcanaLog.debug(MODULE, "Processing diary dream for {}", player.getName().getString());
 
         BlockPos pos = DiaryWorldData.get(level).getStructurePos();
         String coords = "%d %d %d".formatted(pos.getX(), pos.getY(), pos.getZ());
@@ -69,7 +65,7 @@ public class DiaryGuideDream implements DreamType {
         if (first) {
             msg = FIRST_DREAM_MSG.formatted(coords);
             ORDER.put(player.getUUID(), shuffled());
-            ArcanaMod.LOGGER.debug("Primeiro sonho enviado.");
+            ArcanaLog.debug(MODULE, "First diary dream sent to player");
         } else {
             List<Integer> order = ORDER.get(player.getUUID());
             if (order.isEmpty()) order.addAll(shuffled());
@@ -81,7 +77,7 @@ public class DiaryGuideDream implements DreamType {
                         .withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC)
         );
 
-        ArcanaMod.LOGGER.debug("Sonho do diário enviado com sucesso para {}", player.getName().getString());
+        ArcanaLog.debug(MODULE, "Diary dream successfully delivered to {}", player.getName().getString());
     }
 
     private List<Integer> shuffled() {

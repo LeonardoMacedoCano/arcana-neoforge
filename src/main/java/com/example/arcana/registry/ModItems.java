@@ -1,22 +1,25 @@
 package com.example.arcana.registry;
 
+import com.example.arcana.util.ArcanaLog;
 import com.example.arcana.ArcanaMod;
 import com.example.arcana.item.DiaryItem;
 import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.bus.api.IEventBus;
 
 public class ModItems {
-    public static final DeferredRegister.Items ITEMS =
-            DeferredRegister.createItems(ArcanaMod.MODID);
+    private static final String MODULE = "ITEMS";
+    public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(ArcanaMod.MODID);
 
     public static final DeferredItem<Item> DIARY_KALIASTRUS = ITEMS.register(
             "diary_kaliastrus",
             () -> new DiaryItem(new Item.Properties().stacksTo(1))
     );
 
-    public static void register(net.neoforged.bus.api.IEventBus modEventBus) {
+    public static void register(IEventBus modEventBus) {
+        ArcanaLog.debug(MODULE, "Items register starting");
         ITEMS.register(modEventBus);
-        ArcanaMod.LOGGER.debug("Items registrados com sucesso");
+        ArcanaLog.debug(MODULE, "Items registered successfully");
     }
 }

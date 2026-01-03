@@ -1,5 +1,6 @@
 package com.example.arcana.registry;
 
+import com.example.arcana.util.ArcanaLog;
 import com.example.arcana.ArcanaMod;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -7,10 +8,11 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.bus.api.IEventBus;
 
 public class ModCreativeTabs {
-    public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
-            DeferredRegister.create(Registries.CREATIVE_MODE_TAB, ArcanaMod.MODID);
+    private static final String MODULE = "CREATIVE_TABS";
+    public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, ArcanaMod.MODID);
 
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> ARCANA_TAB =
             CREATIVE_MODE_TABS.register("arcana_tab", () -> CreativeModeTab.builder()
@@ -22,8 +24,9 @@ public class ModCreativeTabs {
                     .build()
             );
 
-    public static void register(net.neoforged.bus.api.IEventBus modEventBus) {
+    public static void register(IEventBus modEventBus) {
+        ArcanaLog.debug(MODULE, "Creative Tabs register starting");
         CREATIVE_MODE_TABS.register(modEventBus);
-        ArcanaMod.LOGGER.debug("Creative Tabs registradas com sucesso");
+        ArcanaLog.debug(MODULE, "Creative Tabs registered successfully");
     }
 }

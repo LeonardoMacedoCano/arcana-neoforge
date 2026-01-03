@@ -4,6 +4,7 @@ import com.example.arcana.registry.ModBlocks;
 import com.example.arcana.registry.ModCreativeTabs;
 import com.example.arcana.registry.ModItems;
 import com.example.arcana.systems.dreams.DreamRegistry;
+import com.example.arcana.util.ArcanaLog;
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 import net.neoforged.bus.api.IEventBus;
@@ -21,51 +22,51 @@ public class ArcanaMod {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public ArcanaMod(IEventBus modEventBus, ModContainer modContainer) {
-        LOGGER.info("═══════════════════════════════════════");
-        LOGGER.info("  Inicializando Arcana Mod v1.0");
-        LOGGER.info("  Minecraft 1.21.1 - NeoForge");
-        LOGGER.info("═══════════════════════════════════════");
+        ArcanaLog.info("Core", "═══════════════════════════════════════");
+        ArcanaLog.info("Core", "Starting Arcana Mod v1.0");
+        ArcanaLog.info("Core", "Minecraft 1.21.1 - NeoForge");
+        ArcanaLog.info("Core", "═══════════════════════════════════════");
 
         modEventBus.addListener(this::commonSetup);
         registerModContent(modEventBus);
         NeoForge.EVENT_BUS.register(this);
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
 
-        LOGGER.info("Registro de componentes concluído com sucesso");
+        ArcanaLog.info("Core", "Component registration completed successfully");
     }
 
     private void registerModContent(IEventBus modEventBus) {
-        LOGGER.debug("Registrando conteúdo do mod...");
+        ArcanaLog.debug("Core", "Registering mod content...");
 
         ModBlocks.register(modEventBus);
         ModItems.register(modEventBus);
         ModCreativeTabs.register(modEventBus);
 
-        LOGGER.debug("Conteúdo registrado: Blocks, Items, Creative Tabs");
+        ArcanaLog.debug("Core", "Content registered: Blocks, Items, Creative Tabs");
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
-        LOGGER.info("═══════════════════════════════════════");
-        LOGGER.info("  ARCANA - Common Setup");
-        LOGGER.info("  Inicializando sistemas do jogo...");
-        LOGGER.info("═══════════════════════════════════════");
+        ArcanaLog.info("Core", "═══════════════════════════════════════");
+        ArcanaLog.info("Core", "ARCANA - Common Setup");
+        ArcanaLog.info("Core", "Initializing core systems...");
+        ArcanaLog.info("Core", "═══════════════════════════════════════");
 
         event.enqueueWork(this::initializeSystems);
     }
 
     private void initializeSystems() {
-        LOGGER.debug("Inicializando Dream System...");
+        ArcanaLog.debug("Core", "Initializing Dream System...");
         DreamRegistry.init();
-        LOGGER.debug("Dream System inicializado com sucesso");
+        ArcanaLog.debug("Core", "Dream System initialized successfully");
 
-        LOGGER.info("Todos os sistemas inicializados");
+        ArcanaLog.info("Core", "All systems initialized successfully");
     }
 
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
-        LOGGER.info("═══════════════════════════════════════");
-        LOGGER.info("  ARCANA - Server Starting");
-        LOGGER.info("  Preparando mundo do servidor...");
-        LOGGER.info("═══════════════════════════════════════");
+        ArcanaLog.info("Core", "═══════════════════════════════════════");
+        ArcanaLog.info("Core", "ARCANA - Server Starting");
+        ArcanaLog.info("Core", "Preparing server world...");
+        ArcanaLog.info("Core", "═══════════════════════════════════════");
     }
 }

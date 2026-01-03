@@ -1,6 +1,6 @@
 package com.example.arcana.client.gui;
 
-import com.example.arcana.ArcanaMod;
+import com.example.arcana.util.ArcanaLog;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.GuiGraphics;
@@ -18,6 +18,7 @@ public class DiaryScreen extends Screen {
     private static final ResourceLocation COVER_FRONT = ResourceLocation.fromNamespaceAndPath("arcana", "textures/item/gui/diary_cover_front.png");
     private static final ResourceLocation COVER_BACK = ResourceLocation.fromNamespaceAndPath("arcana", "textures/item/gui/diary_cover_back.png");
     private static final ResourceLocation PAGE_BACKGROUND = ResourceLocation.fromNamespaceAndPath("arcana", "textures/item/gui/diary_page.png");
+    private static final String MODULE = "DIARY";
     private static final int TEXTURE_WIDTH = 174;
     private static final int TEXTURE_HEIGHT = 256;
     private static final int TEXT_MARGIN = 15;
@@ -47,10 +48,10 @@ public class DiaryScreen extends Screen {
         this.topPos = (this.height - TEXTURE_HEIGHT) / 2;
 
         if (contentPages == null) {
-            ArcanaMod.LOGGER.debug("Processando conteúdo do diário");
+            ArcanaLog.debug(MODULE, "Processing diary content");
             this.contentPages = processContentIntoPages();
             this.totalPages = contentPages.size() + 2;
-            ArcanaMod.LOGGER.debug("Total de páginas calculadas: {}", this.totalPages);
+            ArcanaLog.debug(MODULE, "Total pages calculated: " + this.totalPages);
         }
     }
 
@@ -77,7 +78,7 @@ public class DiaryScreen extends Screen {
             pages.add(current);
         }
 
-        ArcanaMod.LOGGER.debug("Páginas de conteúdo geradas: {}", pages.size());
+        ArcanaLog.debug(MODULE, "Generated content pages: " + pages.size());
         return pages;
     }
 
@@ -85,7 +86,7 @@ public class DiaryScreen extends Screen {
         if (currentPage > 0) {
             currentPage--;
             pageAlpha = 0.0F;
-            ArcanaMod.LOGGER.debug("Página anterior: {}", currentPage);
+            ArcanaLog.debug(MODULE, "Previous page: " + currentPage);
             playPageTurnSound();
         }
     }
@@ -94,7 +95,7 @@ public class DiaryScreen extends Screen {
         if (currentPage < totalPages - 1) {
             currentPage++;
             pageAlpha = 0.0F;
-            ArcanaMod.LOGGER.debug("Próxima página: {}", currentPage);
+            ArcanaLog.debug(MODULE, "Next page: " + currentPage);
             playPageTurnSound();
         }
     }
@@ -219,7 +220,7 @@ public class DiaryScreen extends Screen {
 
         if (page < minPage || page > maxPage) return false;
 
-        ArcanaMod.LOGGER.debug("Indo para página: {}", page);
+        ArcanaLog.debug(MODULE, "Jumping to page: " + page);
         currentPage = page;
         pageAlpha = 0.0F;
         playPageTurnSound();
@@ -227,12 +228,8 @@ public class DiaryScreen extends Screen {
     }
 
     private int mapKeyToDigit(int keyCode) {
-        if (keyCode >= InputConstants.KEY_0 && keyCode <= InputConstants.KEY_9)
-            return keyCode - InputConstants.KEY_0;
-
-        if (keyCode >= InputConstants.KEY_NUMPAD0 && keyCode <= InputConstants.KEY_NUMPAD9)
-            return keyCode - InputConstants.KEY_NUMPAD0;
-
+        if (keyCode >= InputConstants.KEY_1 && keyCode <= InputConstants.KEY_9) return keyCode - InputConstants.KEY_1 + 1;
+        if (keyCode == InputConstants.KEY_0) return 0;
         return -1;
     }
 }

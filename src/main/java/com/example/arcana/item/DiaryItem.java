@@ -47,14 +47,6 @@ public class DiaryItem extends Item {
         return stack;
     }
 
-    public static UUID getBoundPlayer(ItemStack stack) {
-        if (!(stack.getItem() instanceof DiaryItem)) return null;
-        CustomData data = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
-        CompoundTag tag = data.copyTag();
-        if (!tag.hasUUID(BOUND_KEY)) return null;
-        return tag.getUUID(BOUND_KEY);
-    }
-
     @Override
     public @NotNull InteractionResultHolder<ItemStack> use(Level level, Player player, @NotNull InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);

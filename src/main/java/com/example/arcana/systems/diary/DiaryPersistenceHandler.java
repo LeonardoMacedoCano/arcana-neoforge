@@ -1,7 +1,7 @@
 package com.example.arcana.systems.diary;
 
-import com.example.arcana.ArcanaMod;
 import com.example.arcana.registry.ModItems;
+import com.example.arcana.util.ArcanaLog;
 import com.example.arcana.util.DelayedMessageHandler;
 import com.example.arcana.util.DelayedMessageQueue;
 import com.example.arcana.util.PlayerPersistentDataUtil;
@@ -10,7 +10,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.event.entity.item.ItemTossEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerContainerEvent;
@@ -20,6 +19,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import java.util.*;
 
 public class DiaryPersistenceHandler {
+    private static final String MODULE = "DIARY";
 
     private static final String PLAYER_BOUND_KEY = "arcana.diary_bound";
     private static final Map<UUID, Deque<Integer>> PLAYER_MESSAGE_ORDER = new HashMap<>();
@@ -30,11 +30,11 @@ public class DiaryPersistenceHandler {
     private record TrackedDrop(UUID owner, UUID entityUuid, long expireTick) {}
 
     private static final Component[] MESSAGES = new Component[]{
-            Component.literal("Oi… você se afastou e me deixou sozinho.\nAinda tenho histórias para te contar.").withStyle(ChatFormatting.LIGHT_PURPLE),
-            Component.literal("Ei… não importa onde estou, espero que não me perca agora.").withStyle(ChatFormatting.DARK_PURPLE),
-            Component.literal("Estamos conectados de alguma forma.\nNão me deixe para trás.").withStyle(ChatFormatting.DARK_PURPLE),
-            Component.literal("Mesmo que eu esteja longe, continuo com você.\nSempre voltarei.").withStyle(ChatFormatting.LIGHT_PURPLE),
-            Component.literal("Não dá para fugir de mim tão fácil.\nAinda temos muito a compartilhar.").withStyle(ChatFormatting.DARK_PURPLE)
+            Component.literal("Hey… you left me behind.\nI still have stories to tell you.").withStyle(ChatFormatting.LIGHT_PURPLE),
+            Component.literal("Listen… no matter where I am, I hope you don’t lose me now.").withStyle(ChatFormatting.DARK_PURPLE),
+            Component.literal("We are connected somehow.\nDon’t abandon me yet.").withStyle(ChatFormatting.DARK_PURPLE),
+            Component.literal("Even if I am far away, I am still with you.\nI will always return.").withStyle(ChatFormatting.LIGHT_PURPLE),
+            Component.literal("You can't get rid of me that easily.\nWe still have a lot to share.").withStyle(ChatFormatting.DARK_PURPLE)
     };
 
     public static void handleItemToss(ItemTossEvent event) {
@@ -46,7 +46,7 @@ public class DiaryPersistenceHandler {
 
         long expireTick = player.serverLevel().getServer().getTickCount() + RETURN_DELAY_TICKS;
         TRACKED_DROPS.put(entity.getUUID(), new TrackedDrop(player.getUUID(), entity.getUUID(), expireTick));
-        log(player, "Jogador jogou o diário — item registrado para rastreamento");
+        ArcanaLog.playerDebug(MODULE, player, "Diary tossed and registered for tracking");
     }
 
     public static void handlePlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
@@ -68,7 +68,7 @@ public class DiaryPersistenceHandler {
                 slot.set(ItemStack.EMPTY);
                 slot.setChanged();
                 ensureDiaryReturnScheduled(player);
-                log(player, "Removendo diário do container fechado");
+                ArcanaLog.playerDebug(MODULE, player, "Diary removed from external container and scheduled to return");
             }
         });
     }
@@ -83,6 +83,7 @@ public class DiaryPersistenceHandler {
     private static void restoreDiaryIfBondedAndMissing(ServerPlayer player) {
         if (!isDiaryBondActive(player) || playerHasDiary(player)) return;
         ensureDiaryReturnScheduled(player);
+        ArcanaLog.playerDebug(MODULE, player, "Player bonded to diary but missing it, scheduling return");
     }
 
     private static void processTrackedDrops(ServerTickEvent.Post event, long tick) {
@@ -93,7 +94,7 @@ public class DiaryPersistenceHandler {
             if (entity == null) {
                 ServerPlayer owner = event.getServer().getPlayerList().getPlayer(drop.owner());
                 if (owner != null && !playerHasDiary(owner)) {
-                    giveDiaryWithReminder(owner, "Diário voltou porque foi destruído");
+                    giveDiaryWithReminder(owner, "Diary returned because the dropped entity disappeared");
                 }
                 return true;
             }
@@ -103,7 +104,7 @@ public class DiaryPersistenceHandler {
             entity.discard();
             ServerPlayer owner = event.getServer().getPlayerList().getPlayer(drop.owner());
             if (owner != null && !playerHasDiary(owner)) {
-                giveDiaryWithReminder(owner, "Diário voltou após tempo expirar");
+                giveDiaryWithReminder(owner, "Diary returned after drop expiration time");
             }
 
             return true;
@@ -128,7 +129,7 @@ public class DiaryPersistenceHandler {
     private static void ensureDiaryBond(ServerPlayer player) {
         if (!isDiaryBondActive(player) && playerHasDiary(player)) {
             PlayerPersistentDataUtil.setBoolean(player, PLAYER_BOUND_KEY, true);
-            log(player, "Jogador foi vinculado ao diário ao possuir o item no inventário");
+            ArcanaLog.playerInfo(MODULE, player, "Player bonded to diary after acquiring it");
         }
     }
 
@@ -143,13 +144,13 @@ public class DiaryPersistenceHandler {
     private static void giveDiary(ServerPlayer player) {
         player.getInventory().add(new ItemStack(ModItems.DIARY_KALIASTRUS.get()));
         PlayerPersistentDataUtil.setBoolean(player, PLAYER_BOUND_KEY, true);
-        log(player, "Jogador recebeu diário no inventário");
+        ArcanaLog.playerInfo(MODULE, player, "Diary added to player inventory");
     }
 
     private static void giveDiaryWithReminder(ServerPlayer player, String logText) {
         giveDiary(player);
         sendDiaryReminderMessage(player);
-        log(player, logText);
+        ArcanaLog.playerInfo(MODULE, player, logText);
     }
 
     private static boolean playerHasDiary(ServerPlayer player) {
@@ -176,7 +177,7 @@ public class DiaryPersistenceHandler {
         DelayedMessageQueue queue = new DelayedMessageQueue(player, 20);
         queue.addMessage(MESSAGES[msgIndex]);
         DelayedMessageHandler.addQueue(queue);
-        log(player, "Mensagem de lembrança enviada");
+        ArcanaLog.playerDebug(MODULE, player, "Diary reminder message sent");
     }
 
     private static Deque<Integer> generateMessageOrder() {
@@ -195,10 +196,6 @@ public class DiaryPersistenceHandler {
     private static void scheduleDiaryReturn(ServerPlayer player) {
         long targetTick = player.serverLevel().getServer().getTickCount() + RETURN_DELAY_TICKS;
         SCHEDULED_RETURNS.put(player.getUUID(), targetTick);
-        log(player, "Diário agendado para retorno");
-    }
-
-    private static void log(Player player, String text) {
-        ArcanaMod.LOGGER.debug("[Diary] {} {}", text, player.getName().getString());
+        ArcanaLog.playerDebug(MODULE, player, "Diary scheduled to return");
     }
 }

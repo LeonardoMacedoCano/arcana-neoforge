@@ -5,9 +5,5 @@
   "diary.arcana.subtitle": "Chronicle of Hubris",
   "diary.arcana.tooltip.line1": "§6An ancient tome of forbidden knowledge",
   "diary.arcana.tooltip.line2": "§7Right-click to read",
-  "diary.arcana.tooltip.line3": "§8\"I challenged the stars...\"",
-
-  "config.arcana.enableDiarySpawn": "Enable Diary Spawn",
-  "config.arcana.chestSpawnDistance": "Chest Spawn Distance",
-  "config.arcana.debugMode": "Debug Mode"
+  "diary.arcana.tooltip.line3": "§8\"I challenged the stars...\""
 }

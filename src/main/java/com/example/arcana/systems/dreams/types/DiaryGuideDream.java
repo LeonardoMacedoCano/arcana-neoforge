@@ -1,5 +1,6 @@
 package com.example.arcana.systems.dreams.types;
 
+import com.example.arcana.systems.dreams.DreamMessagesUtil;
 import com.example.arcana.systems.dreams.DreamType;
 import com.example.arcana.systems.diary.DiaryWorldData;
 import com.example.arcana.util.ArcanaLog;
@@ -15,14 +16,8 @@ import static com.example.arcana.systems.diary.DiaryPersistenceHandler.isDiaryBo
 
 public class DiaryGuideDream implements DreamType {
     private static final String MODULE = "DIARY_GUIDE_DREAM";
-    private static final String FIRST_DREAM_MSG = "Tonight I dreamed of numbers... %s.\nI have no idea what they mean!";
-    private static final String[] DREAM_MSGS = {
-            "Again I dreamed of the numbers %s.\nSomething tells me they are related to the plains...",
-            "The numbers %s appeared again in my dream.\nI need to discover what they represent.",
-            "Another night haunted by %s.\nI feel like they point to a path.",
-            "Once again the numbers %s appeared.\nThey seem to indicate something important.",
-            "I dreamed again of %s.\nSomething awaits me in the structure on the plains."
-    };
+    private static final String FILE = "diary_guide_dream";
+
     private static final Map<UUID, List<Integer>> ORDER = new HashMap<>();
     private static final Random RNG = new Random();
 
@@ -34,7 +29,6 @@ public class DiaryGuideDream implements DreamType {
     @Override
     public boolean shouldTrigger(ServerPlayer player, ServerLevel level) {
         ArcanaLog.debug(MODULE, "Processing diary trigger condition for {}", player.getName().getString());
-
         DiaryWorldData data = DiaryWorldData.get(level);
 
         if (!data.hasSpawned()) {
@@ -55,6 +49,7 @@ public class DiaryGuideDream implements DreamType {
     @Override
     public void runDream(ServerPlayer player, ServerLevel level) {
         ArcanaLog.debug(MODULE, "Processing diary dream for {}", player.getName().getString());
+        var msgs = DreamMessagesUtil.load(FILE);
 
         BlockPos pos = DiaryWorldData.get(level).getStructurePos();
         String coords = "%d %d %d".formatted(pos.getX(), pos.getY(), pos.getZ());
@@ -63,13 +58,13 @@ public class DiaryGuideDream implements DreamType {
         String msg;
 
         if (first) {
-            msg = FIRST_DREAM_MSG.formatted(coords);
-            ORDER.put(player.getUUID(), shuffled());
-            ArcanaLog.debug(MODULE, "First diary dream sent to player");
+            msg = msgs.first().formatted(coords);
+            ORDER.put(player.getUUID(), shuffled(msgs.rest().size()));
         } else {
             List<Integer> order = ORDER.get(player.getUUID());
-            if (order.isEmpty()) order.addAll(shuffled());
-            msg = DREAM_MSGS[order.removeFirst()].formatted(coords);
+            if (order.isEmpty()) order.addAll(shuffled(msgs.rest().size()));
+
+            msg = msgs.rest().get(order.removeFirst()).formatted(coords);
         }
 
         player.sendSystemMessage(
@@ -80,9 +75,9 @@ public class DiaryGuideDream implements DreamType {
         ArcanaLog.debug(MODULE, "Diary dream successfully delivered to {}", player.getName().getString());
     }
 
-    private List<Integer> shuffled() {
+    private List<Integer> shuffled(int size) {
         List<Integer> list = new ArrayList<>();
-        for (int i = 0; i < DREAM_MSGS.length; i++) list.add(i);
+        for (int i = 0; i < size; i++) list.add(i);
         Collections.shuffle(list, RNG);
         return list;
     }

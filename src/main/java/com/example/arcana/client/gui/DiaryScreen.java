@@ -1,5 +1,6 @@
 package com.example.arcana.client.gui;
 
+import com.example.arcana.ArcanaMod;
 import com.example.arcana.util.ArcanaLog;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.client.gui.screens.Screen;
@@ -15,9 +16,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DiaryScreen extends Screen {
-    private static final ResourceLocation COVER_FRONT = ResourceLocation.fromNamespaceAndPath("arcana", "textures/item/gui/diary_cover_front.png");
-    private static final ResourceLocation COVER_BACK = ResourceLocation.fromNamespaceAndPath("arcana", "textures/item/gui/diary_cover_back.png");
-    private static final ResourceLocation PAGE_BACKGROUND = ResourceLocation.fromNamespaceAndPath("arcana", "textures/item/gui/diary_page.png");
+    private static final ResourceLocation COVER_FRONT = ResourceLocation.fromNamespaceAndPath(ArcanaMod.MODID, "textures/item/gui/diary_cover_front.png");
+    private static final ResourceLocation COVER_BACK = ResourceLocation.fromNamespaceAndPath(ArcanaMod.MODID, "textures/item/gui/diary_cover_back.png");
+    private static final ResourceLocation PAGE_BACKGROUND = ResourceLocation.fromNamespaceAndPath(ArcanaMod.MODID, "textures/item/gui/diary_page.png");
     private static final String MODULE = "DIARY";
     private static final int TEXTURE_WIDTH = 174;
     private static final int TEXTURE_HEIGHT = 256;
@@ -58,10 +59,13 @@ public class DiaryScreen extends Screen {
     private List<List<FormattedCharSequence>> processContentIntoPages() {
         List<List<FormattedCharSequence>> pages = new ArrayList<>();
         List<FormattedCharSequence> current = new ArrayList<>();
-        String[] content = DiaryContent.getContent();
 
-        for (String paragraph : content) {
-            List<FormattedCharSequence> wrapped = this.font.split(Component.literal(paragraph), TEXT_WIDTH);
+        List<Component> content = DiaryContent.getContent();
+
+        for (Component paragraph : content) {
+            List<FormattedCharSequence> wrapped =
+                    this.font.split(paragraph, TEXT_WIDTH);
+
             for (FormattedCharSequence line : wrapped) {
                 if (current.size() >= MAX_LINES_PER_PAGE) {
                     pages.add(new ArrayList<>(current));
@@ -69,7 +73,8 @@ public class DiaryScreen extends Screen {
                 }
                 current.add(line);
             }
-            if (!paragraph.isEmpty() && current.size() < MAX_LINES_PER_PAGE) {
+
+            if (current.size() < MAX_LINES_PER_PAGE) {
                 current.add(FormattedCharSequence.EMPTY);
             }
         }
@@ -78,7 +83,6 @@ public class DiaryScreen extends Screen {
             pages.add(current);
         }
 
-        ArcanaLog.debug(MODULE, "Generated content pages: " + pages.size());
         return pages;
     }
 

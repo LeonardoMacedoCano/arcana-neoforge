@@ -1,112 +1,76 @@
 package com.example.arcana.client.gui;
 
+import com.example.arcana.ArcanaMod;
+import com.example.arcana.util.ArcanaLog;
+import com.example.arcana.util.LanguageUtil;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.mojang.serialization.JsonOps;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
+
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 public class DiaryContent {
+    private static final String MODULE = "DIARY";
 
-    public static String[] getContent() {
-        return new String[]{
-            // Introdução
-            "I, Kaliastrus, dared to challenge the stars. Each Arcana answered my call... and my defiance.",
-            "",
+    public static List<Component> getContent() {
+        List<Component> result = new ArrayList<>();
+        String code = LanguageUtil.getSupportedLanguage();
+        ResourceLocation res = ResourceLocation.fromNamespaceAndPath(
+                ArcanaMod.MODID,
+                "narrative/diary/kaliastrus_diary_" + code + ".json"
+        );
 
-            // The Fool
-            "The Fool whispered of beginnings. I laughed at caution and leaped into the void, trusting only in the fall itself.",
-            "",
+        try {
+            Optional<Resource> optional = Minecraft.getInstance()
+                    .getResourceManager()
+                    .getResource(res);
 
-            // The Magician
-            "The Magician showed me power. I grasped it with both hands, bending reality to my will. But power without wisdom is a weapon turned inward.",
-            "",
+            if (optional.isEmpty()) {
+                ArcanaLog.error(MODULE, "Diary resource not found: " + res);
+                result.add(Component.literal("Failed to load diary content (missing resource)."));
+                return result;
+            }
 
-            // The High Priestess
-            "The High Priestess spoke in silence. Her mysteries eluded me then. I sought answers in action, not in stillness.",
-            "",
+            Resource resource = optional.get();
 
-            // The Empress
-            "The Empress offered abundance. I took freely, greedily. I did not know that all gifts come with a price, and hers was the heaviest of all.",
-            "",
+            try (InputStream stream = resource.open()) {
+                String json = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+                JsonObject root = JsonParser.parseString(json).getAsJsonObject();
 
-            // The Emperor
-            "The Emperor demanded order. I rebelled. Structure felt like chains, and I would not be bound by rules written by others.",
-            "",
+                JsonArray paragraphs = root.getAsJsonArray("paragraphs");
 
-            // The Hierophant
-            "The Hierophant preached tradition. I turned away. What use had I for old ways when new paths called to me?",
-            "",
+                for (JsonElement paragraphElement : paragraphs) {
+                    JsonArray parts = paragraphElement.getAsJsonArray();
+                    Component assembled = Component.empty();
 
-            // The Lovers
-            "The Lovers presented choice. I chose myself. I chose ambition. I chose the path that led here, to this cursed knowledge.",
-            "",
+                    for (JsonElement part : parts) {
+                        ComponentSerialization.CODEC
+                                .parse(JsonOps.INSTANCE, part)
+                                .resultOrPartial(error -> ArcanaLog.error(MODULE, "JSON parse error: " + error))
+                                .ifPresent(component -> assembled.getSiblings().add(component));
+                    }
 
-            // The Chariot
-            "The Chariot promised victory. I rode it to triumph after triumph, never seeing that each win brought me closer to my undoing.",
-            "",
+                    result.add(assembled);
+                }
+            }
 
-            // Strength
-            "Strength challenged me to master myself. I mastered the world instead. What fool tames his own spirit when he can tame dragons?",
-            "",
+        } catch (Exception e) {
+            ArcanaLog.error(MODULE, "Failed to load diary content: " + e.getMessage());
+            result.add(Component.literal("Failed to load diary content."));
+        }
 
-            // The Hermit
-            "The Hermit urged solitude and reflection. I had no time for such weakness. I had worlds to conquer, secrets to unveil.",
-            "",
-
-            // Wheel of Fortune
-            "The Wheel of Fortune spins endlessly. I thought myself above its turn. How naive. How arrogant. The wheel always finds you in the end.",
-            "",
-
-            // Justice
-            "Justice weighs all actions. My scales tipped long ago, heavy with hubris and blind ambition. There is no balance left for me.",
-            "",
-
-            // The Hanged Man
-            "The Hanged Man saw the world from a new perspective. I refused to hang. I refused to surrender. And so I learned nothing.",
-            "",
-
-            // Death
-            "Death comes for all, but I sought to cheat it. I bargained with forces beyond mortal ken. I won... and lost everything.",
-            "",
-
-            // Temperance
-            "Temperance preached moderation. I knew only excess. More power. More knowledge. More. Always more.",
-            "",
-
-            // The Devil
-            "The Devil offered chains disguised as freedom. I wore them proudly. I still wear them now. They are part of me, forever.",
-            "",
-
-            // The Tower
-            "The Tower fell, as towers must. My ambitions crumbled. My certainties shattered. I stood in the ruins of my own making.",
-            "",
-
-            // The Star
-            "The Star promised hope. Even in my darkest hour, a glimmer remained. But hope is a cruel thing when you know what you've become.",
-            "",
-
-            // The Moon
-            "The Moon revealed illusions. I saw myself truly for the first time. The monster staring back wore my face.",
-            "",
-
-            // The Sun
-            "The Sun brought clarity and truth. It burned away my lies. It showed me the price of my choices. The light is merciless.",
-            "",
-
-            // Judgement
-            "Judgement called me to account. I have no defense. No excuse. I knew the cost and paid it willingly. I am guilty.",
-            "",
-
-            // The World
-            "The World is complete. The cycle ends. I stand at the finish, but there is no victory here. Only understanding, bitter and cold.",
-            "",
-
-            // Epilogue
-            "If you read these words, learn from my folly. The Arcana are not toys to be mastered. They are forces beyond mortal comprehension.",
-            "",
-            "I challenged the stars and lost. But perhaps in my loss, others might find wisdom.",
-            "",
-            "This is my legacy. This is my warning.",
-            "",
-            "Do not follow my path.",
-            "",
-            "— Kaliastrus, The Fool Who Would Be God"
-        };
+        return result;
     }
 
     public static String getTitle() {

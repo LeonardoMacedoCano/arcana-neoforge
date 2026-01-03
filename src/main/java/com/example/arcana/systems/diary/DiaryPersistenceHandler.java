@@ -5,7 +5,6 @@ import com.example.arcana.util.ArcanaLog;
 import com.example.arcana.util.DelayedMessageHandler;
 import com.example.arcana.util.DelayedMessageQueue;
 import com.example.arcana.util.PlayerPersistentDataUtil;
-import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -20,7 +19,6 @@ import java.util.*;
 
 public class DiaryPersistenceHandler {
     private static final String MODULE = "DIARY";
-
     private static final String PLAYER_BOUND_KEY = "arcana.diary_bound";
     private static final Map<UUID, Deque<Integer>> PLAYER_MESSAGE_ORDER = new HashMap<>();
     private static final Random RANDOM = new Random();
@@ -28,14 +26,6 @@ public class DiaryPersistenceHandler {
     private static final int RETURN_DELAY_TICKS = 100;
     private static final Map<UUID, TrackedDrop> TRACKED_DROPS = new HashMap<>();
     private record TrackedDrop(UUID owner, UUID entityUuid, long expireTick) {}
-
-    private static final Component[] MESSAGES = new Component[]{
-            Component.literal("Hey… you left me behind.\nI still have stories to tell you.").withStyle(ChatFormatting.LIGHT_PURPLE),
-            Component.literal("Listen… no matter where I am, I hope you don’t lose me now.").withStyle(ChatFormatting.DARK_PURPLE),
-            Component.literal("We are connected somehow.\nDon’t abandon me yet.").withStyle(ChatFormatting.DARK_PURPLE),
-            Component.literal("Even if I am far away, I am still with you.\nI will always return.").withStyle(ChatFormatting.LIGHT_PURPLE),
-            Component.literal("You can't get rid of me that easily.\nWe still have a lot to share.").withStyle(ChatFormatting.DARK_PURPLE)
-    };
 
     public static void handleItemToss(ItemTossEvent event) {
         if (!(event.getPlayer() instanceof ServerPlayer player)) return;
@@ -168,16 +158,20 @@ public class DiaryPersistenceHandler {
     private static void sendDiaryReminderMessage(ServerPlayer player) {
         UUID id = player.getUUID();
         Deque<Integer> order = PLAYER_MESSAGE_ORDER.computeIfAbsent(id, k -> generateMessageOrder());
+
         if (order.isEmpty()) {
             order = generateMessageOrder();
             PLAYER_MESSAGE_ORDER.put(id, order);
         }
 
-        int msgIndex = order.removeFirst();
+        int index = order.removeFirst();
+
+        List<Component> msgs = DiaryMessageLoader.getMessages();
+        if (index >= msgs.size()) index = 0;
+
         DelayedMessageQueue queue = new DelayedMessageQueue(player, 20);
-        queue.addMessage(MESSAGES[msgIndex]);
+        queue.addMessage(msgs.get(index));
         DelayedMessageHandler.addQueue(queue);
-        ArcanaLog.playerDebug(MODULE, player, "Diary reminder message sent");
     }
 
     private static Deque<Integer> generateMessageOrder() {

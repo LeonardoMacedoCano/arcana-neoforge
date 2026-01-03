@@ -73,11 +73,25 @@ public class DiaryRitualGenerator {
     private static void sendNarrativeMessages(ServerPlayer player) {
         ArcanaLog.debug(MODULE, "Preparing narrative messages for {}", player.getName().getString());
 
+        var list = DiaryRitualMessageLoader.getMessages();
+        String playerName = player.getName().getString();
+
         DelayedMessageQueue queue = new DelayedMessageQueue(player, 40);
-        queue.addMessage(Component.literal(player.getName().getString() + ",").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD));
-        queue.addMessage(Component.literal("I did not conquer THE WORLD...").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC));
-        queue.addMessage(Component.literal("now I leave my last remnants of existence with you.").withStyle(ChatFormatting.DARK_PURPLE));
-        queue.addMessage(Component.literal("GOODBYE").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD));
+
+        list.forEach(line -> {
+            line = line.replace("%player%", playerName);
+
+            if (line.equalsIgnoreCase("GOODBYE") || line.equalsIgnoreCase("ADEUS")) {
+                queue.addMessage(Component.literal(line)
+                        .withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD));
+            } else if (line.contains("WORLD") || line.contains("MUNDO")) {
+                queue.addMessage(Component.literal(line)
+                        .withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC));
+            } else {
+                queue.addMessage(Component.literal(line)
+                        .withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD));
+            }
+        });
 
         DelayedMessageHandler.addQueue(queue);
     }

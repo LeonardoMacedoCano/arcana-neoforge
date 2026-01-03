@@ -25,6 +25,7 @@ public class DiaryPersistenceHandler {
     private static final Map<UUID, Long> SCHEDULED_RETURNS = new HashMap<>();
     private static final int RETURN_DELAY_TICKS = 100;
     private static final Map<UUID, TrackedDrop> TRACKED_DROPS = new HashMap<>();
+
     private record TrackedDrop(UUID owner, UUID entityUuid, long expireTick) {}
 
     public static void handleItemToss(ItemTossEvent event) {
@@ -102,12 +103,22 @@ public class DiaryPersistenceHandler {
     }
 
     private static void processScheduledReturns(ServerTickEvent.Post event, long tick) {
-        SCHEDULED_RETURNS.entrySet().removeIf(e -> {
-            if (e.getValue() > tick) return false;
-            ServerPlayer p = event.getServer().getPlayerList().getPlayer(e.getKey());
-            if (p != null && !playerHasDiary(p)) giveDiary(p);
-            return true;
-        });
+        Iterator<Map.Entry<UUID, Long>> it = SCHEDULED_RETURNS.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<UUID, Long> entry = it.next();
+            if (entry.getValue() <= tick) {
+                ServerPlayer player = event.getServer().getPlayerList().getPlayer(entry.getKey());
+                if (player != null) {
+                    boolean success = giveDiary(player);
+                    if (success) {
+                        sendDiaryReminderMessage(player);
+                        it.remove();
+                    }
+                } else {
+                    it.remove();
+                }
+            }
+        }
     }
 
     private static void checkDiaryBondForAllPlayers(ServerTickEvent.Post event) {
@@ -131,16 +142,30 @@ public class DiaryPersistenceHandler {
         return stack.getItem() == ModItems.DIARY_KALIASTRUS.get();
     }
 
-    private static void giveDiary(ServerPlayer player) {
-        player.getInventory().add(new ItemStack(ModItems.DIARY_KALIASTRUS.get()));
-        PlayerPersistentDataUtil.setBoolean(player, PLAYER_BOUND_KEY, true);
-        ArcanaLog.playerInfo(MODULE, player, "Diary added to player inventory");
+    private static boolean giveDiary(ServerPlayer player) {
+        if (playerHasDiary(player)) return true;
+        ItemStack stack = new ItemStack(ModItems.DIARY_KALIASTRUS.get());
+
+        boolean added = player.getInventory().add(stack);
+        if (added) {
+            PlayerPersistentDataUtil.setBoolean(player, PLAYER_BOUND_KEY, true);
+            ArcanaLog.playerInfo(MODULE, player, "Diary added to player inventory");
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private static void giveDiaryWithReminder(ServerPlayer player, String logText) {
-        giveDiary(player);
-        sendDiaryReminderMessage(player);
-        ArcanaLog.playerInfo(MODULE, player, logText);
+        boolean added = giveDiary(player);
+        if (added) {
+            sendDiaryReminderMessage(player);
+            ArcanaLog.playerInfo(MODULE, player, logText);
+        } else {
+            long tick = player.serverLevel().getServer().getTickCount();
+            SCHEDULED_RETURNS.put(player.getUUID(), tick + 20);
+            ArcanaLog.playerInfo(MODULE, player, "Inventory full, diary return rescheduled");
+        }
     }
 
     private static boolean playerHasDiary(ServerPlayer player) {
@@ -181,15 +206,27 @@ public class DiaryPersistenceHandler {
     }
 
     private static void ensureDiaryReturnScheduled(ServerPlayer player) {
-        player.serverLevel().getServer().execute(() -> {
-            scheduleDiaryReturn(player);
-            sendDiaryReminderMessage(player);
-        });
+        player.serverLevel().getServer().execute(() -> scheduleDiaryReturn(player));
     }
 
     private static void scheduleDiaryReturn(ServerPlayer player) {
         long targetTick = player.serverLevel().getServer().getTickCount() + RETURN_DELAY_TICKS;
         SCHEDULED_RETURNS.put(player.getUUID(), targetTick);
         ArcanaLog.playerDebug(MODULE, player, "Diary scheduled to return");
+    }
+
+    public static void preventExtraDiaryPickup(ServerPlayer player) {
+        if (!playerHasDiary(player)) return;
+
+        List<ItemEntity> nearby = player.level().getEntitiesOfClass(
+            ItemEntity.class,
+            player.getBoundingBox().inflate(1.5),
+            e -> isDiary(e.getItem())
+        );
+
+        for (ItemEntity entity : nearby) {
+            entity.setPickUpDelay(20);
+            ArcanaLog.playerDebug(MODULE, player, "Blocked picking up extra diary from ground");
+        }
     }
 }

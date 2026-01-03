@@ -19,7 +19,9 @@ public class DiaryEvents {
     public static void onPlayerTick(PlayerTickEvent.Post event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         if (player.level().isClientSide) return;
+
         DiaryRitualGenerator.tryGenerateRitual(event);
+        DiaryPersistenceHandler.preventExtraDiaryPickup(player);
     }
 
     @SubscribeEvent

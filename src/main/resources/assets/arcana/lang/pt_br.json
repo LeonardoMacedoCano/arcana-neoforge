@@ -5,5 +5,10 @@
   "diary.arcana.subtitle": "Crônica da Arrogância",
   "diary.arcana.tooltip.line1": "§6Um tomo antigo de conhecimento proibido",
   "diary.arcana.tooltip.line2": "§7Clique com o botão direito para ler",
-  "diary.arcana.tooltip.line3": "§8\"Eu desafiei as estrelas...\""
+  "diary.arcana.tooltip.line3": "§8\"Eu desafiei as estrelas...\"",
+
+  "advancement.arcana.root.title": "Arcana",
+  "advancement.arcana.root.description": "Os mistérios aguardam...",
+  "advancement.arcana.first_diary.title": "Primeiro Diário",
+  "advancement.arcana.first_diary.description": "Você recebeu o Diário Arcano pela primeira vez."
 }

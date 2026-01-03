@@ -5,5 +5,10 @@
   "diary.arcana.subtitle": "Chronicle of Hubris",
   "diary.arcana.tooltip.line1": "§6An ancient tome of forbidden knowledge",
   "diary.arcana.tooltip.line2": "§7Right-click to read",
-  "diary.arcana.tooltip.line3": "§8\"I challenged the stars...\""
+  "diary.arcana.tooltip.line3": "§8\"I challenged the stars...\"",
+
+  "advancement.arcana.root.title": "Arcana",
+  "advancement.arcana.root.description": "The mysteries await...",
+  "advancement.arcana.first_diary.title": "First Diary",
+  "advancement.arcana.first_diary.description": "You received the Arcana Diary for the first time."
 }

@@ -1,0 +1,30 @@
+{
+  "parent": "arcana:root",
+  "criteria": {
+    "got_diary": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "arcana:diary_kaliastrus"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "advancement.arcana.first_diary.description"
+    },
+    "frame": "task",
+    "hidden": false,
+    "icon": {
+      "id": "arcana:diary_kaliastrus"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancement.arcana.first_diary.title"
+    }
+  }
+}

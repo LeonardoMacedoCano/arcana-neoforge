@@ -49,7 +49,7 @@ public class DiaryGuideDream implements DreamType {
     @Override
     public void runDream(ServerPlayer player, ServerLevel level) {
         ArcanaLog.debug(MODULE, "Processing diary dream for {}", player.getName().getString());
-        var msgs = DreamMessagesUtil.load(FILE);
+        var msgs = DreamMessagesUtil.load(FILE, player);
 
         BlockPos pos = DiaryWorldData.get(level).getStructurePos();
         String coords = "%d %d %d".formatted(pos.getX(), pos.getY(), pos.getZ());

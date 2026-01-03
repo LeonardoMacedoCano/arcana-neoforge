@@ -6,14 +6,15 @@ import com.example.arcana.util.JsonResourceLoaderUtil;
 import com.example.arcana.util.LanguageUtil;
 import com.google.gson.JsonArray;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class DreamMessagesUtil {
 
-    public static DreamMessages load(String dreamFileName) {
-        String lang = LanguageUtil.getSupportedLanguage();
+    public static DreamMessages load(String dreamFileName, ServerPlayer player) {
+        String lang = LanguageUtil.getSupportedLanguage(player.getLanguage());
 
         ResourceLocation path = ResourceLocation.fromNamespaceAndPath(
                 ArcanaMod.MODID,

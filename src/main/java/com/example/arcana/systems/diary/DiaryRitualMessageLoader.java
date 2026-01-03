@@ -6,14 +6,15 @@ import com.example.arcana.util.JsonResourceLoaderUtil;
 import com.example.arcana.util.LanguageUtil;
 import com.google.gson.JsonArray;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class DiaryRitualMessageLoader {
 
-    public static List<String> getMessages() {
-        String lang = LanguageUtil.getSupportedLanguage();
+    public static List<String> getMessages(ServerPlayer player) {
+        String lang = LanguageUtil.getSupportedLanguage(player.getLanguage());
 
         ResourceLocation path = ResourceLocation.fromNamespaceAndPath(
                 ArcanaMod.MODID,

@@ -8,15 +8,16 @@ import com.google.gson.JsonArray;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class DiaryMessageLoader {
 
-    public static List<Component> getMessages() {
+    public static List<Component> getMessages(ServerPlayer player) {
 
-        String lang = LanguageUtil.getSupportedLanguage();
+        String lang = LanguageUtil.getSupportedLanguage(player.getLanguage());
 
         ResourceLocation path = ResourceLocation.fromNamespaceAndPath(
                 ArcanaMod.MODID,

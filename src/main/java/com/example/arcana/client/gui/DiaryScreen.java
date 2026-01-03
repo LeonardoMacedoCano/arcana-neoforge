@@ -2,7 +2,6 @@ package com.example.arcana.client.gui;
 
 import com.example.arcana.ArcanaMod;
 import com.example.arcana.util.ArcanaLog;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
@@ -10,6 +9,7 @@ import net.minecraft.util.FormattedCharSequence;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -105,9 +105,9 @@ public class DiaryScreen extends Screen {
     }
 
     private void playPageTurnSound() {
-        var player = Minecraft.getInstance().player;
-        if (player != null) {
-            player.playSound(SoundEvents.BOOK_PAGE_TURN, 0.75F, 1.0F);
+        var mcPlayer = Minecraft.getInstance().player;
+        if (mcPlayer != null) {
+            mcPlayer.playSound(SoundEvents.BOOK_PAGE_TURN, 0.75F, 1.0F);
         }
     }
 

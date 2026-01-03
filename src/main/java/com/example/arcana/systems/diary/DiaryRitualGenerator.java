@@ -73,7 +73,7 @@ public class DiaryRitualGenerator {
     private static void sendNarrativeMessages(ServerPlayer player) {
         ArcanaLog.debug(MODULE, "Preparing narrative messages for {}", player.getName().getString());
 
-        var list = DiaryRitualMessageLoader.getMessages();
+        var list = DiaryRitualMessageLoader.getMessages(player);
         String playerName = player.getName().getString();
 
         DelayedMessageQueue queue = new DelayedMessageQueue(player, 40);

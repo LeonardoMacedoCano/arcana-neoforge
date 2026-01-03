@@ -191,7 +191,7 @@ public class DiaryPersistenceHandler {
 
         int index = order.removeFirst();
 
-        List<Component> msgs = DiaryMessageLoader.getMessages();
+        List<Component> msgs = DiaryMessageLoader.getMessages(player);
         if (index >= msgs.size()) index = 0;
 
         DelayedMessageQueue queue = new DelayedMessageQueue(player, 20);

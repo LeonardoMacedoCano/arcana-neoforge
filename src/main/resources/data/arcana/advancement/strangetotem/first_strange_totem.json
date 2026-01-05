@@ -1,0 +1,30 @@
+{
+  "parent": "arcana:root",
+  "criteria": {
+    "got_diary": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "arcana:strange_totem"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "advancement.arcana.first_strange_totem.description"
+    },
+    "frame": "task",
+    "hidden": false,
+    "icon": {
+      "id": "arcana:strange_totem"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancement.arcana.first_strange_totem.title"
+    }
+  }
+}

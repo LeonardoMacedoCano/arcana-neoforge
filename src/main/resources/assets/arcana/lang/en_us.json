@@ -1,14 +1,22 @@
 {
-  "item.arcana.diary_kaliastrus": "Diary of Kaliastrus",
   "itemGroup.arcana.arcana_tab": "Arcana",
 
-  "diary.arcana.subtitle": "Chronicle of Hubris",
-  "diary.arcana.tooltip.line1": "§6An ancient tome of forbidden knowledge",
-  "diary.arcana.tooltip.line2": "§7Right-click to read",
-  "diary.arcana.tooltip.line3": "§8\"I challenged the stars...\"",
+  "item.arcana.diary_kaliastrus": "Diary of Kaliastrus",
+  "item.arcana.diary_kaliastrus.tooltip.line1": "§6An ancient tome of forbidden knowledge",
+  "item.arcana.diary_kaliastrus.tooltip.line2": "§7Right-click to read",
+  "item.arcana.diary_kaliastrus.tooltip.line3": "§8\"I challenged the stars...\"",
+
+  "item.arcana.strange_totem": "Strange Totem",
+  "item.arcana.strange_totem.tooltip.line1": "the star awakens what sleeps",
+  "item.arcana.strange_totem.tooltip.line2": "the observer loses itself",
+  "item.arcana.strange_totem.tooltip.line3": "twenty two stars remain above",
 
   "advancement.arcana.root.title": "Arcana",
   "advancement.arcana.root.description": "The stars are watching us...",
+
   "advancement.arcana.first_diary.title": "Strange Diary",
-  "advancement.arcana.first_diary.description": "You received the diary."
+  "advancement.arcana.first_diary.description": "You received the diary.",
+
+  "advancement.arcana.first_strange_totem.title": "Strange Totem",
+  "advancement.arcana.first_strange_totem.description": "You received the first strange totem."
 }

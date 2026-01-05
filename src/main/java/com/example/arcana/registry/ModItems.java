@@ -1,5 +1,6 @@
 package com.example.arcana.registry;
 
+import com.example.arcana.item.StrangeTotemItem;
 import com.example.arcana.util.ArcanaLog;
 import com.example.arcana.ArcanaMod;
 import com.example.arcana.item.DiaryItem;
@@ -12,10 +13,14 @@ public class ModItems {
     private static final String MODULE = "ITEMS";
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(ArcanaMod.MODID);
 
-    public static final DeferredItem<Item> DIARY_KALIASTRUS = ITEMS.register(
-            "diary_kaliastrus",
-            () -> new DiaryItem(new Item.Properties().stacksTo(1))
+    public static final DeferredItem<Item> DIARY_KALIASTRUS =
+            ITEMS.register("diary_kaliastrus",
+                () -> new DiaryItem(new Item.Properties().stacksTo(1))
     );
+
+    public static final DeferredItem<Item> STRANGE_TOTEM =
+            ITEMS.register("strange_totem",
+                    () -> new StrangeTotemItem(new Item.Properties()));
 
     public static void register(IEventBus modEventBus) {
         ArcanaLog.debug(MODULE, "Items register starting");

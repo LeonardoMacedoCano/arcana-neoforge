@@ -68,10 +68,10 @@ public class DiaryItem extends Item {
                                 @NotNull List<Component> tooltip,
                                 @NotNull TooltipFlag flag) {
 
-        tooltip.add(Component.translatable("diary.arcana.tooltip.line1"));
-        tooltip.add(Component.translatable("diary.arcana.tooltip.line2"));
+        tooltip.add(Component.translatable("item.arcana.diary_kaliastrus.tooltip.line1"));
+        tooltip.add(Component.translatable("item.arcana.diary_kaliastrus.tooltip.line2"));
         tooltip.add(Component.empty());
-        tooltip.add(Component.translatable("diary.arcana.tooltip.line3"));
+        tooltip.add(Component.translatable("item.arcana.diary_kaliastrus.tooltip.line3"));
 
         super.appendHoverText(stack, context, tooltip, flag);
     }

@@ -20,6 +20,7 @@ public class ModCreativeTabs {
                     .icon(() -> new ItemStack(ModItems.DIARY_KALIASTRUS.get()))
                     .displayItems((parameters, output) -> {
                         output.accept(ModItems.DIARY_KALIASTRUS.get());
+                        output.accept(ModItems.STRANGE_TOTEM.get());
                     })
                     .build()
             );

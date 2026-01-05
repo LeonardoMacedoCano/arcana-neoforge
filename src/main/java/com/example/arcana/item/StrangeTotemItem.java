@@ -12,7 +12,7 @@ import java.util.List;
 public class StrangeTotemItem extends Item {
 
     public StrangeTotemItem(Properties properties) {
-        super(properties.rarity(Rarity.EPIC).stacksTo(1));
+        super(properties.rarity(Rarity.EPIC));
     }
 
     @Override

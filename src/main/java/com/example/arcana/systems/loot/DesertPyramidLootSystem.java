@@ -17,7 +17,7 @@ public class DesertPyramidLootSystem {
     public static LootPool createStrangeTotemPool() {
         return LootPool.lootPool()
                 .setRolls(ConstantValue.exactly(1))
-                .when(LootItemRandomChanceCondition.randomChance(0.25f))
+                .when(LootItemRandomChanceCondition.randomChance(0.15f))
                 .add(LootItem.lootTableItem(ModItems.STRANGE_TOTEM.get()).setWeight(1))
                 .build();
     }

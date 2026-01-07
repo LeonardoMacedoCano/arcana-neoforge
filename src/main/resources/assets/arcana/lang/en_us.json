@@ -1,5 +1,5 @@
 {
-  "itemGroup.arcana.arcana_tab": "Arcana",
+  "itemGroup.arcana": "Arcana",
 
   "item.arcana.diary_kaliastrus": "Diary of Kaliastrus",
   "item.arcana.diary_kaliastrus.tooltip.line1": "§6An ancient tome of forbidden knowledge",
@@ -10,6 +10,8 @@
   "item.arcana.strange_totem.tooltip.line1": "the star awakens what sleeps",
   "item.arcana.strange_totem.tooltip.line2": "the observer loses itself",
   "item.arcana.strange_totem.tooltip.line3": "twenty two stars remain above",
+
+  "block.arcana.diorite_pedestal": "Diorite Pedestal",
 
   "advancement.arcana.root.title": "Arcana",
   "advancement.arcana.root.description": "The stars are watching us...",

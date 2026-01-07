@@ -1,5 +1,5 @@
 {
-  "itemGroup.arcana.arcana_tab": "Arcana",
+  "itemGroup.arcana": "Arcana",
 
   "item.arcana.diary_kaliastrus": "Diário de Kaliastrus",
   "item.arcana.diary_kaliastrus.tooltip.line1": "§6Um tomo antigo de conhecimento proibido",
@@ -10,6 +10,8 @@
   "item.arcana.strange_totem.tooltip.line1": "a estrela desperta o que dorme",
   "item.arcana.strange_totem.tooltip.line2": "o observador perde a si mesmo",
   "item.arcana.strange_totem.tooltip.line3": "vinte e duas estrelas permanecem acima",
+
+  "block.arcana.diorite_pedestal": "Pedestal de Diorito",
 
   "advancement.arcana.root.title": "Arcana",
   "advancement.arcana.root.description": "As estrelas nos observam...",

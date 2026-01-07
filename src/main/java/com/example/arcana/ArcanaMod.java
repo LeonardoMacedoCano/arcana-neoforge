@@ -1,5 +1,6 @@
 package com.example.arcana;
 
+import com.example.arcana.registry.ModBlockEntities;
 import com.example.arcana.registry.ModBlocks;
 import com.example.arcana.registry.ModCreativeTabs;
 import com.example.arcana.registry.ModItems;
@@ -40,6 +41,7 @@ public class ArcanaMod {
 
         ModBlocks.register(modEventBus);
         ModItems.register(modEventBus);
+        ModBlockEntities.BLOCK_ENTITIES.register(modEventBus);
         ModCreativeTabs.register(modEventBus);
 
         ArcanaLog.debug("Core", "Content registered: Blocks, Items, Creative Tabs");

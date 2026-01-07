@@ -21,6 +21,7 @@ public class ModCreativeTabs {
                     .displayItems((parameters, output) -> {
                         output.accept(ModItems.DIARY_KALIASTRUS.get());
                         output.accept(ModItems.STRANGE_TOTEM.get());
+                        output.accept(ModItems.DIORITE_PEDESTAL_ITEM.get());
                     })
                     .build()
             );

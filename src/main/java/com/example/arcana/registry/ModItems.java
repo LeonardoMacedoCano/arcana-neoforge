@@ -4,7 +4,9 @@ import com.example.arcana.item.StrangeTotemItem;
 import com.example.arcana.util.ArcanaLog;
 import com.example.arcana.ArcanaMod;
 import com.example.arcana.item.DiaryItem;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.bus.api.IEventBus;
@@ -21,6 +23,12 @@ public class ModItems {
     public static final DeferredItem<Item> STRANGE_TOTEM =
             ITEMS.register("strange_totem",
                     () -> new StrangeTotemItem(new Item.Properties()));
+
+    public static final DeferredHolder<Item, BlockItem> DIORITE_PEDESTAL_ITEM =
+            ITEMS.register("diorite_pedestal",
+                    () -> new BlockItem(ModBlocks.DIORITE_PEDESTAL.get(),
+                            new Item.Properties())
+            );
 
     public static void register(IEventBus modEventBus) {
         ArcanaLog.debug(MODULE, "Items register starting");

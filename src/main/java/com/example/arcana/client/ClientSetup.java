@@ -3,15 +3,14 @@ package com.example.arcana.client;
 import com.example.arcana.ArcanaMod;
 import com.example.arcana.client.gui.DiaryScreen;
 import com.example.arcana.item.DiaryItem;
+import com.example.arcana.registry.ModBlockEntities;
 import com.example.arcana.util.ArcanaLog;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Player;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 
 @EventBusSubscriber(modid = ArcanaMod.MODID, value = Dist.CLIENT)
 public class ClientSetup {
@@ -25,4 +24,13 @@ public class ClientSetup {
         });
         ArcanaLog.debug(MODULE, "Client setup started successfully");
     }
+
+    @SubscribeEvent
+    public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerBlockEntityRenderer(
+                ModBlockEntities.DIORITE_PEDESTAL.get(),
+                ctx -> new DioritePedestalRenderer()
+        );
+    }
+
 }

@@ -1,4 +1,4 @@
-package com.example.arcana.client;
+package com.example.arcana.client.renderer;
 
 import com.example.arcana.blockentity.DioritePedestalBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;

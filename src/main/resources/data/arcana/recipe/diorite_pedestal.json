@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "D": {
+      "item": "minecraft:diorite"
+    },
+    "S": {
+      "item": "minecraft:diorite_slab"
+    }
+  },
+  "pattern": [
+    "DSD",
+    " D ",
+    "SSS"
+  ],
+  "result": {
+    "id": "arcana:diorite_pedestal",
+    "count": 1
+  }
+}

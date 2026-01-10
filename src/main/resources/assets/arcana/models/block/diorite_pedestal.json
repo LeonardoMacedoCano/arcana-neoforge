@@ -135,10 +135,10 @@
 			"scale": [0.65, 0.65, 0.65]
 		},
 		"firstperson_righthand": {
-			"translation": [-10, 9.25, -13.25]
+			"translation": [11.75, -5, -13.25]
 		},
 		"firstperson_lefthand": {
-			"translation": [-8, 1.5, -35.75]
+			"translation": [11.75, -5, -13.25]
 		},
 		"ground": {
 			"translation": [0, 4.25, 0],

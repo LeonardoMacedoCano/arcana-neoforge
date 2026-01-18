@@ -1,5 +1,6 @@
 package com.example.arcana.registry;
 
+import com.example.arcana.content.item.FoolSoulItem;
 import com.example.arcana.content.item.StrangeTotemItem;
 import com.example.arcana.util.common.ArcanaLog;
 import com.example.arcana.ArcanaMod;
@@ -24,11 +25,15 @@ public class ModItems {
             ITEMS.register("strange_totem",
                     () -> new StrangeTotemItem(new Item.Properties()));
 
-    public static final DeferredHolder<Item, BlockItem> DIORITE_PEDESTAL_ITEM =
+    public static final DeferredHolder<Item, BlockItem> DIORITE_PEDESTAL =
             ITEMS.register("diorite_pedestal",
                     () -> new BlockItem(ModBlocks.DIORITE_PEDESTAL.get(),
                             new Item.Properties())
             );
+
+    public static final DeferredItem<Item> FOOL_SOUL =
+            ITEMS.register("fool_soul",
+                    () -> new FoolSoulItem(new Item.Properties()));
 
     public static void register(IEventBus modEventBus) {
         ArcanaLog.debug(MODULE, "Items register starting");

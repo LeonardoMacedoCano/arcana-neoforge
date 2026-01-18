@@ -13,6 +13,10 @@
 
   "block.arcana.diorite_pedestal": "Diorite Pedestal",
 
+  "item.arcana.fool_soul": "The Fool Soul",
+  "item.arcana.fool_soul.tooltip.line1": "Fated to witness every beginning of a journey",
+  "item.arcana.fool_soul.tooltip.line2": "but never its end",
+
   "advancement.arcana.root.title": "Arcana",
   "advancement.arcana.root.description": "The stars are watching us...",
 

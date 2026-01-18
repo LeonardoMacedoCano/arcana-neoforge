@@ -13,6 +13,10 @@
 
   "block.arcana.diorite_pedestal": "Pedestal de Diorito",
 
+  "item.arcana.fool_soul": "Alma do Louco",
+  "item.arcana.fool_soul.tooltip.line1": "Fadado a presenciar todo o inicio de jornada",
+  "item.arcana.fool_soul.tooltip.line2": "mas nunca seu final",
+
   "advancement.arcana.root.title": "Arcana",
   "advancement.arcana.root.description": "As estrelas nos observam...",
 

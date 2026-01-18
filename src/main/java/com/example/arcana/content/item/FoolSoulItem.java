@@ -12,7 +12,7 @@ import java.util.List;
 public class FoolSoulItem  extends Item {
 
     public FoolSoulItem(Properties properties) {
-        super(properties.rarity(Rarity.RARE));
+        super(properties.rarity(Rarity.EPIC));
     }
 
     @Override

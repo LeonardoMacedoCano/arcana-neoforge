@@ -23,6 +23,7 @@ public class ModCreativeTabs {
                         output.accept(ModItems.STRANGE_TOTEM.get());
                         output.accept(ModItems.DIORITE_PEDESTAL.get());
                         output.accept(ModItems.FOOL_SOUL.get());
+                        output.accept(ModItems.THE_FOOL_SPAWN_EGG.get());
                     })
                     .build()
             );

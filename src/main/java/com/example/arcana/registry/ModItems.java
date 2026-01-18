@@ -7,6 +7,7 @@ import com.example.arcana.ArcanaMod;
 import com.example.arcana.content.item.DiaryItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.neoforged.neoforge.common.DeferredSpawnEggItem;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -34,6 +35,14 @@ public class ModItems {
     public static final DeferredItem<Item> FOOL_SOUL =
             ITEMS.register("fool_soul",
                     () -> new FoolSoulItem(new Item.Properties()));
+
+    public static final DeferredHolder<Item, DeferredSpawnEggItem> THE_FOOL_SPAWN_EGG =
+            ITEMS.register("the_fool_spawn_egg", () -> new DeferredSpawnEggItem(
+                    ModEntities.THE_FOOL,
+                    0x8B4789,
+                    0xD4AF37,
+                    new Item.Properties()
+            ));
 
     public static void register(IEventBus modEventBus) {
         ArcanaLog.debug(MODULE, "Items register starting");

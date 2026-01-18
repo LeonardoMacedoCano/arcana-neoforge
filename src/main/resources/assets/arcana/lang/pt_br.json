@@ -17,6 +17,9 @@
   "item.arcana.fool_soul.tooltip.line1": "Fadado a presenciar todo o inicio de jornada",
   "item.arcana.fool_soul.tooltip.line2": "mas nunca seu final",
 
+  "entity.arcana.the_fool": "O Louco",
+  "item.arcana.the_fool_spawn_egg": "Ovo de Invocação do Louco",
+
   "advancement.arcana.root.title": "Arcana",
   "advancement.arcana.root.description": "As estrelas nos observam...",
 

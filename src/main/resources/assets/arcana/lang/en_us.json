@@ -17,6 +17,9 @@
   "item.arcana.fool_soul.tooltip.line1": "Fated to witness every beginning of a journey",
   "item.arcana.fool_soul.tooltip.line2": "but never its end",
 
+  "entity.arcana.the_fool": "The Fool",
+  "item.arcana.the_fool_spawn_egg": "The Fool Spawn Egg",
+
   "advancement.arcana.root.title": "Arcana",
   "advancement.arcana.root.description": "The stars are watching us...",
 

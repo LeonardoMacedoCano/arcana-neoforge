@@ -2,8 +2,8 @@ package com.example.arcana.systems.diary;
 
 import com.example.arcana.ArcanaMod;
 import com.example.arcana.util.ArcanaLog;
-import com.example.arcana.util.JsonResourceLoaderUtil;
 import com.example.arcana.util.LanguageUtil;
+import com.example.arcana.util.ServerResourceLoader;
 import com.google.gson.JsonArray;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -16,15 +16,15 @@ import java.util.List;
 public class DiaryMessageLoader {
 
     public static List<Component> getMessages(ServerPlayer player) {
-
-        String lang = LanguageUtil.getSupportedLanguage(player.getLanguage());
+        String playerLang = ServerResourceLoader.getPlayerLanguage(player);
+        String validatedLang = LanguageUtil.validate(playerLang);
 
         ResourceLocation path = ResourceLocation.fromNamespaceAndPath(
                 ArcanaMod.MODID,
-                "narrative/diary/diary_messages_" + lang + ".json"
+                "narrative/diary/diary_messages_" + validatedLang + ".json"
         );
-
-        var jsonOpt = JsonResourceLoaderUtil.loadJson(path, "Diary");
+        var server = player.getServer();
+        var jsonOpt = ServerResourceLoader.loadJson(server, path, "Diary");
 
         if (jsonOpt.isEmpty() || !jsonOpt.get().has("messages")) {
             ArcanaLog.error("Diary",
@@ -51,7 +51,7 @@ public class DiaryMessageLoader {
                 "Diary",
                 "Loaded {} diary messages ({})",
                 list.size(),
-                lang
+                validatedLang
         );
 
         return list;

@@ -2,8 +2,8 @@ package com.example.arcana.systems.dreams;
 
 import com.example.arcana.ArcanaMod;
 import com.example.arcana.util.ArcanaLog;
-import com.example.arcana.util.JsonResourceLoaderUtil;
 import com.example.arcana.util.LanguageUtil;
+import com.example.arcana.util.ServerResourceLoader;
 import com.google.gson.JsonArray;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -14,14 +14,16 @@ import java.util.List;
 public class DreamMessagesUtil {
 
     public static DreamMessages load(String dreamFileName, ServerPlayer player) {
-        String lang = LanguageUtil.getSupportedLanguage(player.getLanguage());
+        String playerLang = ServerResourceLoader.getPlayerLanguage(player);
+        String validatedLang = LanguageUtil.validate(playerLang);
 
         ResourceLocation path = ResourceLocation.fromNamespaceAndPath(
                 ArcanaMod.MODID,
-                "narrative/dreams/" + dreamFileName + "_" + lang + ".json"
+                "narrative/dreams/" + dreamFileName + "_" + validatedLang + ".json"
         );
 
-        var jsonOpt = JsonResourceLoaderUtil.loadJson(path, "Dreams");
+        var server = player.getServer();
+        var jsonOpt = ServerResourceLoader.loadJson(server, path, "Dreams");
 
         if (jsonOpt.isEmpty() ||
                 !jsonOpt.get().has("first") ||
@@ -29,7 +31,7 @@ public class DreamMessagesUtil {
 
             ArcanaLog.warn("Dreams",
                     "Invalid dream json {} ({})",
-                    dreamFileName, lang
+                    dreamFileName, validatedLang
             );
 
             return error();
@@ -47,7 +49,7 @@ public class DreamMessagesUtil {
 
         ArcanaLog.info("Dreams",
                 "Loaded {} dream messages for {} ({})",
-                msgs.size(), dreamFileName, lang
+                msgs.size(), dreamFileName, validatedLang
         );
 
         return new DreamMessages(first, msgs);

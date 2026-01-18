@@ -1,6 +1,5 @@
 package com.example.arcana.util;
 
-import net.minecraft.client.Minecraft;
 import java.util.Set;
 
 public class LanguageUtil {
@@ -12,34 +11,12 @@ public class LanguageUtil {
             "pt_br"
     );
 
-    public static String getSupportedLanguage() {
-        if (isClient()) {
-            return getClientLanguage();
-        }
-
-        return DEFAULT_LANG;
-    }
-
-    private static boolean isClient() {
-        try {
-            Minecraft.getInstance();
-            return true;
-        } catch (NoClassDefFoundError e) {
-            return false;
-        }
-    }
-
-    private static String getClientLanguage() {
-        String code = Minecraft.getInstance().getLanguageManager().getSelected().toLowerCase();
-        if (!SUPPORTED_LANGS.contains(code)) {
+    public static String validate(String code) {
+        if (code == null || code.isEmpty()) {
             return DEFAULT_LANG;
         }
-        return code;
-    }
 
-    public static String getSupportedLanguage(String code) {
-        if (code == null) return DEFAULT_LANG;
-        code = code.toLowerCase();
-        return SUPPORTED_LANGS.contains(code) ? code : DEFAULT_LANG;
+        String normalized = code.toLowerCase();
+        return SUPPORTED_LANGS.contains(normalized) ? normalized : DEFAULT_LANG;
     }
 }

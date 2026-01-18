@@ -1,6 +1,6 @@
 package com.example.arcana.systems.dreams;
 
-import com.example.arcana.util.ArcanaLog;
+import com.example.arcana.util.common.ArcanaLog;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 

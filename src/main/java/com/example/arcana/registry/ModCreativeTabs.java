@@ -1,6 +1,6 @@
 package com.example.arcana.registry;
 
-import com.example.arcana.util.ArcanaLog;
+import com.example.arcana.util.common.ArcanaLog;
 import com.example.arcana.ArcanaMod;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;

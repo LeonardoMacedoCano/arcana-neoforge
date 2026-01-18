@@ -1,5 +1,6 @@
-package com.example.arcana.util;
+package com.example.arcana.util.client;
 
+import com.example.arcana.util.common.ResourceLoaderUtil;
 import com.google.gson.JsonObject;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;

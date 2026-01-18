@@ -1,4 +1,4 @@
-package com.example.arcana.util;
+package com.example.arcana.util.common;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;

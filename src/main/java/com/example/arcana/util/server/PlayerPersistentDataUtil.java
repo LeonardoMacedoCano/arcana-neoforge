@@ -1,4 +1,4 @@
-package com.example.arcana.util;
+package com.example.arcana.util.server;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;

@@ -1,4 +1,4 @@
-package com.example.arcana.util;
+package com.example.arcana.util.common;
 
 import java.util.Set;
 

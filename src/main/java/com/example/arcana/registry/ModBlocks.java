@@ -1,7 +1,7 @@
 package com.example.arcana.registry;
 
-import com.example.arcana.block.DioritePedestalBlock;
-import com.example.arcana.util.ArcanaLog;
+import com.example.arcana.content.block.DioritePedestalBlock;
+import com.example.arcana.util.common.ArcanaLog;
 import com.example.arcana.ArcanaMod;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;

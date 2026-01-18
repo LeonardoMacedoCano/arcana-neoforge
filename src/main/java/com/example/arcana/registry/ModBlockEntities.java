@@ -1,7 +1,7 @@
 package com.example.arcana.registry;
 
 import com.example.arcana.ArcanaMod;
-import com.example.arcana.blockentity.DioritePedestalBlockEntity;
+import com.example.arcana.content.blockentity.DioritePedestalBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.neoforge.registries.DeferredHolder;

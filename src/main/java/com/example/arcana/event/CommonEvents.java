@@ -2,7 +2,7 @@ package com.example.arcana.event;
 
 import com.example.arcana.ArcanaMod;
 import com.example.arcana.systems.dreams.DreamManager;
-import com.example.arcana.util.DelayedMessageHandler;
+import com.example.arcana.util.server.DelayedMessageHandler;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;

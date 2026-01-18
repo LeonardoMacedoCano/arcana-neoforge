@@ -1,4 +1,4 @@
-package com.example.arcana.util;
+package com.example.arcana.util.server;
 
 import java.util.LinkedList;
 import java.util.List;

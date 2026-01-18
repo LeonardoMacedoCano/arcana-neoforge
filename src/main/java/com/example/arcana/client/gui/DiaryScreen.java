@@ -1,7 +1,7 @@
 package com.example.arcana.client.gui;
 
 import com.example.arcana.ArcanaMod;
-import com.example.arcana.util.ArcanaLog;
+import com.example.arcana.util.common.ArcanaLog;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;

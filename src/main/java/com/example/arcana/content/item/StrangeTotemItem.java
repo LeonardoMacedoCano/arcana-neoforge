@@ -1,4 +1,4 @@
-package com.example.arcana.item;
+package com.example.arcana.content.item;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;

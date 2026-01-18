@@ -1,10 +1,10 @@
 package com.example.arcana.systems.diary;
 
-import com.example.arcana.item.DiaryItem;
-import com.example.arcana.util.ArcanaLog;
-import com.example.arcana.util.DelayedMessageHandler;
-import com.example.arcana.util.DelayedMessageQueue;
-import com.example.arcana.util.PlayerPersistentDataUtil;
+import com.example.arcana.content.item.DiaryItem;
+import com.example.arcana.util.common.ArcanaLog;
+import com.example.arcana.util.server.DelayedMessageHandler;
+import com.example.arcana.util.server.DelayedMessageQueue;
+import com.example.arcana.util.server.PlayerPersistentDataUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;

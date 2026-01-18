@@ -5,7 +5,7 @@ import com.example.arcana.registry.ModBlocks;
 import com.example.arcana.registry.ModCreativeTabs;
 import com.example.arcana.registry.ModItems;
 import com.example.arcana.systems.dreams.DreamRegistry;
-import com.example.arcana.util.ArcanaLog;
+import com.example.arcana.util.common.ArcanaLog;
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 import net.neoforged.bus.api.IEventBus;

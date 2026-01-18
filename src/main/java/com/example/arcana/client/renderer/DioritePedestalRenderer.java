@@ -1,6 +1,6 @@
 package com.example.arcana.client.renderer;
 
-import com.example.arcana.blockentity.DioritePedestalBlockEntity;
+import com.example.arcana.content.blockentity.DioritePedestalBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;

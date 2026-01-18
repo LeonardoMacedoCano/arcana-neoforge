@@ -1,9 +1,9 @@
 package com.example.arcana.client.gui;
 
 import com.example.arcana.ArcanaMod;
-import com.example.arcana.util.ClientResourceLoader;
-import com.example.arcana.util.ArcanaLog;
-import com.example.arcana.util.LanguageUtil;
+import com.example.arcana.util.client.ClientResourceLoader;
+import com.example.arcana.util.common.ArcanaLog;
+import com.example.arcana.util.common.LanguageUtil;
 import com.google.gson.JsonArray;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;

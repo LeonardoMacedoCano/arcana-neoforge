@@ -1,4 +1,4 @@
-package com.example.arcana.blockentity;
+package com.example.arcana.content.blockentity;
 
 import com.example.arcana.registry.ModBlockEntities;
 import com.example.arcana.registry.ModItems;

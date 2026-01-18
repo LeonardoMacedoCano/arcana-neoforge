@@ -1,4 +1,4 @@
-package com.example.arcana.util;
+package com.example.arcana.util.server;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;

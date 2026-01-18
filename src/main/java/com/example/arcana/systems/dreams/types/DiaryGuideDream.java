@@ -3,7 +3,7 @@ package com.example.arcana.systems.dreams.types;
 import com.example.arcana.systems.dreams.DreamMessagesUtil;
 import com.example.arcana.systems.dreams.DreamType;
 import com.example.arcana.systems.diary.DiaryWorldData;
-import com.example.arcana.util.ArcanaLog;
+import com.example.arcana.util.common.ArcanaLog;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;

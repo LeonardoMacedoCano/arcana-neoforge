@@ -1,9 +1,9 @@
 package com.example.arcana.systems.diary;
 
 import com.example.arcana.ArcanaMod;
-import com.example.arcana.util.ServerResourceLoader;
-import com.example.arcana.util.ArcanaLog;
-import com.example.arcana.util.LanguageUtil;
+import com.example.arcana.util.server.ServerResourceLoader;
+import com.example.arcana.util.common.ArcanaLog;
+import com.example.arcana.util.common.LanguageUtil;
 import com.google.gson.JsonArray;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;

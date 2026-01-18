@@ -1,9 +1,9 @@
 package com.example.arcana.registry;
 
-import com.example.arcana.item.StrangeTotemItem;
-import com.example.arcana.util.ArcanaLog;
+import com.example.arcana.content.item.StrangeTotemItem;
+import com.example.arcana.util.common.ArcanaLog;
 import com.example.arcana.ArcanaMod;
-import com.example.arcana.item.DiaryItem;
+import com.example.arcana.content.item.DiaryItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.registries.DeferredHolder;

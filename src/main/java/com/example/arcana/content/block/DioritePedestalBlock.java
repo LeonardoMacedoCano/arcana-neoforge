@@ -1,6 +1,6 @@
-package com.example.arcana.block;
+package com.example.arcana.content.block;
 
-import com.example.arcana.blockentity.DioritePedestalBlockEntity;
+import com.example.arcana.content.blockentity.DioritePedestalBlockEntity;
 import com.example.arcana.registry.ModBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;

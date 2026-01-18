@@ -1,4 +1,4 @@
-package com.example.arcana.item;
+package com.example.arcana.content.item;
 
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;

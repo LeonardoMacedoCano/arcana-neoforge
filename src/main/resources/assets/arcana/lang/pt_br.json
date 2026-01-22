@@ -27,5 +27,8 @@
   "advancement.arcana.first_diary.description": "Você encontrou o diário.",
 
   "advancement.arcana.first_strange_totem.title": "Totem Estranho",
-  "advancement.arcana.first_strange_totem.description": "Você encontrou o primeiro totem estranho."
+  "advancement.arcana.first_strange_totem.description": "Você encontrou o primeiro totem estranho.",
+
+  "advancement.arcana.defeat_the_fool.title": "O Louco Caiu",
+  "advancement.arcana.defeat_the_fool.description": "Derrote o Louco pela primeira vez."
 }

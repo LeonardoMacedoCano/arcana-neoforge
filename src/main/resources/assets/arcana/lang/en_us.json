@@ -27,5 +27,8 @@
   "advancement.arcana.first_diary.description": "You received the diary.",
 
   "advancement.arcana.first_strange_totem.title": "Strange Totem",
-  "advancement.arcana.first_strange_totem.description": "You received the first strange totem."
+  "advancement.arcana.first_strange_totem.description": "You received the first strange totem.",
+
+  "advancement.arcana.defeat_the_fool.title": "The Fool Has Fallen",
+  "advancement.arcana.defeat_the_fool.description": "Defeat The Fool for the first time."
 }

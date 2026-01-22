@@ -1,0 +1,28 @@
+{
+  "parent": "arcana:root",
+  "criteria": {
+    "kill_the_fool": {
+      "trigger": "minecraft:player_killed_entity",
+      "conditions": {
+        "entity": {
+          "type": "arcana:the_fool"
+        }
+      }
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "advancement.arcana.defeat_the_fool.description"
+    },
+    "frame": "challenge",
+    "hidden": false,
+    "icon": {
+      "id": "arcana:fool_soul"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancement.arcana.defeat_the_fool.title"
+    }
+  }
+}

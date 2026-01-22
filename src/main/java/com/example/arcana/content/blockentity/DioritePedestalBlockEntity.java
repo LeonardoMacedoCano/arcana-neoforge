@@ -1,6 +1,8 @@
 package com.example.arcana.content.blockentity;
 
+import com.example.arcana.content.entity.boss.TheFoolEntity;
 import com.example.arcana.registry.ModBlockEntities;
+import com.example.arcana.registry.ModEntities;
 import com.example.arcana.registry.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -89,7 +91,8 @@ public class DioritePedestalBlockEntity extends BlockEntity implements Container
     }
 
     private static void spawnPedestalMob(Level level, BlockPos pos) {
-        var entity = EntityType.CHICKEN.create(level);
+        TheFoolEntity entity = ModEntities.THE_FOOL.get().create(level);
+
         if (entity != null) {
             entity.setPos(pos.getX() + 0.5, pos.getY() + 2, pos.getZ() + 0.5);
             level.addFreshEntity(entity);

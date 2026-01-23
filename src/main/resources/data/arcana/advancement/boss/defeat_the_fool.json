@@ -1,5 +1,5 @@
 {
-  "parent": "arcana:root",
+  "parent": "arcana:strangetotem/first_strange_totem",
   "criteria": {
     "kill_the_fool": {
       "trigger": "minecraft:player_killed_entity",

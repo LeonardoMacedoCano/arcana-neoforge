@@ -64,12 +64,12 @@ public class TheFoolEntity extends Monster {
 
     public static AttributeSupplier.Builder createAttributes() {
         return Monster.createMonsterAttributes()
-                .add(Attributes.MAX_HEALTH, 300.0D)
-                .add(Attributes.MOVEMENT_SPEED, 0.25D)
-                .add(Attributes.FLYING_SPEED, 0.35D)
-                .add(Attributes.ATTACK_DAMAGE, 12.0D)
-                .add(Attributes.ARMOR, 10.0D)
-                .add(Attributes.KNOCKBACK_RESISTANCE, 0.8D)
+                .add(Attributes.MAX_HEALTH, 700.0D)
+                .add(Attributes.MOVEMENT_SPEED, 0.30D)
+                .add(Attributes.FLYING_SPEED, 0.45D)
+                .add(Attributes.ATTACK_DAMAGE, 17.0D)
+                .add(Attributes.ARMOR, 20.0D)
+                .add(Attributes.KNOCKBACK_RESISTANCE, 1.0D)
                 .add(Attributes.FOLLOW_RANGE, 48.0D);
     }
 

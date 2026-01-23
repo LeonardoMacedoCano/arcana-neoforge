@@ -88,9 +88,9 @@ public class TheFoolModel extends HierarchicalModel<TheFoolEntity> {
                 "RightArm",
                 CubeListBuilder.create()
                         .texOffs(40, 16)
-                        .addBox(-3.3F, -2, -2, 4, 12, 4)
+                        .addBox(-3.0F, -2, -2, 4, 12, 4)
                         .texOffs(40, 32)
-                        .addBox(-3.3F, -2, -2, 4, 12, 4, new CubeDeformation(0.25F)),
+                        .addBox(-3.0F, -2, -2, 4, 12, 4, new CubeDeformation(0.25F)),
                 PartPose.offset(-5, -10, 0)
         );
 
@@ -98,9 +98,9 @@ public class TheFoolModel extends HierarchicalModel<TheFoolEntity> {
                 "LeftArm",
                 CubeListBuilder.create()
                         .texOffs(32, 48)
-                        .addBox(-0.7F, -2, -2, 4, 12, 4)
+                        .addBox(-1.0F, -2, -2, 4, 12, 4)
                         .texOffs(48, 48)
-                        .addBox(-0.7F, -2, -2, 4, 12, 4, new CubeDeformation(0.25F)),
+                        .addBox(-1.0F, -2, -2, 4, 12, 4, new CubeDeformation(0.25F)),
                 PartPose.offset(5, -10, 0)
         );
 

@@ -43,7 +43,7 @@ public class DioritePedestalBlock extends BaseEntityBlock {
 
     @Override
     public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
-        return Block.box(2, 0, 2, 14, 20, 14);
+        return Block.box(2, 0, 2, 14, 16, 14);
     }
 
     @Override

@@ -215,6 +215,13 @@ public class DiaryPersistenceHandler {
         ArcanaLog.playerDebug(MODULE, player, "Diary scheduled to return");
     }
 
+    public static void clearState() {
+        PLAYER_MESSAGE_ORDER.clear();
+        SCHEDULED_RETURNS.clear();
+        TRACKED_DROPS.clear();
+        ArcanaLog.info(MODULE, "Static state cleared on server stop");
+    }
+
     public static void preventExtraDiaryPickup(ServerPlayer player) {
         if (!playerHasDiary(player)) return;
 

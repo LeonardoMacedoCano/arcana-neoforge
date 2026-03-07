@@ -1,6 +1,6 @@
 package com.example.arcana.content.entity.boss;
 
-import com.example.arcana.registry.ModItems;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -15,6 +15,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.FlyingMoveControl;
@@ -25,31 +26,38 @@ import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class TheFoolEntity extends Monster {
 
+    // --- Synced data ---
     private static final EntityDataAccessor<Integer> ATTACK_ANIMATION_TICK =
             SynchedEntityData.defineId(TheFoolEntity.class, EntityDataSerializers.INT);
-
-    private static final EntityDataAccessor<Boolean> USING_CUBIC_DOMAIN =
-            SynchedEntityData.defineId(TheFoolEntity.class, EntityDataSerializers.BOOLEAN);
-
     private static final EntityDataAccessor<Boolean> ATTACK_RIGHT =
             SynchedEntityData.defineId(TheFoolEntity.class, EntityDataSerializers.BOOLEAN);
 
+    // --- Animation states (client-side) ---
     public final AnimationState floatingAnimationState = new AnimationState();
     public final AnimationState rightAttackAnimationState = new AnimationState();
     public final AnimationState leftAttackAnimationState = new AnimationState();
     public final AnimationState cubicDomainAnimationState = new AnimationState();
 
+    // --- Boss bar ---
     private final ServerBossEvent bossBar = new ServerBossEvent(
             this.getDisplayName(),
             BossEvent.BossBarColor.PURPLE,
             BossEvent.BossBarOverlay.PROGRESS
     );
+
+    // --- Intro dialogue (server-side only, no sync needed) ---
+    private static final int INTRO_DURATION = 120; // 6 seconds
+    private static final int INTRO_LINE_1_TICK = 1;
+    private static final int INTRO_LINE_2_TICK = 60;
+    private int introTicks = 0;
+
+    // -------------------------------------------------------------------------
 
     public TheFoolEntity(EntityType<? extends Monster> type, Level level) {
         super(type, level);
@@ -73,6 +81,10 @@ public class TheFoolEntity extends Monster {
                 .add(Attributes.FOLLOW_RANGE, 48.0D);
     }
 
+    // -------------------------------------------------------------------------
+    // Goals
+    // -------------------------------------------------------------------------
+
     @Override
     protected void registerGoals() {
         registerMovementGoals();
@@ -80,11 +92,10 @@ public class TheFoolEntity extends Monster {
     }
 
     private void registerMovementGoals() {
-        this.goalSelector.addGoal(1, new FloatGoal(this));
-        this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.0D, false));
-        this.goalSelector.addGoal(3, new WaterAvoidingRandomFlyingGoal(this, 1.0D));
-        this.goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 8.0F));
-        this.goalSelector.addGoal(5, new RandomLookAroundGoal(this));
+        this.goalSelector.addGoal(1, new MeleeAttackGoal(this, 1.0D, false));
+        this.goalSelector.addGoal(2, new WaterAvoidingRandomFlyingGoal(this, 1.0D));
+        this.goalSelector.addGoal(3, new LookAtPlayerGoal(this, Player.class, 12.0F));
+        this.goalSelector.addGoal(4, new RandomLookAroundGoal(this));
     }
 
     private void registerTargetGoals() {
@@ -92,12 +103,12 @@ public class TheFoolEntity extends Monster {
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
     }
 
+    // -------------------------------------------------------------------------
+    // Navigation
+    // -------------------------------------------------------------------------
+
     @Override
     protected @NotNull PathNavigation createNavigation(@NotNull Level level) {
-        return createFlyingNavigation(level);
-    }
-
-    private PathNavigation createFlyingNavigation(Level level) {
         FlyingPathNavigation navigation = new FlyingPathNavigation(this, level);
         navigation.setCanOpenDoors(false);
         navigation.setCanFloat(true);
@@ -105,13 +116,20 @@ public class TheFoolEntity extends Monster {
         return navigation;
     }
 
+    // -------------------------------------------------------------------------
+    // Synced data
+    // -------------------------------------------------------------------------
+
     @Override
     protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {
         super.defineSynchedData(builder);
         builder.define(ATTACK_ANIMATION_TICK, 0);
-        builder.define(USING_CUBIC_DOMAIN, false);
         builder.define(ATTACK_RIGHT, true);
     }
+
+    // -------------------------------------------------------------------------
+    // Tick
+    // -------------------------------------------------------------------------
 
     @Override
     public void tick() {
@@ -126,6 +144,9 @@ public class TheFoolEntity extends Monster {
     private void updateServerLogic() {
         updateBossBar();
         updateAttackAnimationTick();
+        if (!isIntroComplete()) {
+            handleIntro();
+        }
     }
 
     private void updateBossBar() {
@@ -139,62 +160,59 @@ public class TheFoolEntity extends Monster {
         }
     }
 
-    private void updateClientAnimations() {
-        if (isUsingCubicDomain()) {
-            playCubicDomainAnimation();
-        } else if (getAttackAnimationTick() > 0) {
-            playAttackAnimation();
-        } else {
-            playIdleAnimation();
+    // -------------------------------------------------------------------------
+    // Intro dialogue
+    // -------------------------------------------------------------------------
+
+    private boolean isIntroComplete() {
+        return introTicks >= INTRO_DURATION;
+    }
+
+    private void handleIntro() {
+        introTicks++;
+
+        if (introTicks == INTRO_LINE_1_TICK) {
+            broadcastIntroMessage(Component.translatable("entity.arcana.the_fool.intro.line1")
+                    .withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC));
+        } else if (introTicks == INTRO_LINE_2_TICK) {
+            broadcastIntroMessage(Component.translatable("entity.arcana.the_fool.intro.line2")
+                    .withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD));
         }
     }
 
-    private void playCubicDomainAnimation() {
-        stopAllAnimations();
-        this.cubicDomainAnimationState.startIfStopped(this.tickCount);
+    private void broadcastIntroMessage(Component message) {
+        if (!(this.level() instanceof ServerLevel serverLevel)) return;
+        serverLevel.getEntitiesOfClass(
+                ServerPlayer.class,
+                this.getBoundingBox().inflate(64)
+        ).forEach(player -> player.sendSystemMessage(message));
     }
 
-    private void playAttackAnimation() {
-        this.floatingAnimationState.stop();
-        this.cubicDomainAnimationState.stop();
-
-        if (isRightAttack()) {
-            this.leftAttackAnimationState.stop();
-            this.rightAttackAnimationState.startIfStopped(this.tickCount);
-        } else {
-            this.rightAttackAnimationState.stop();
-            this.leftAttackAnimationState.startIfStopped(this.tickCount);
-        }
+    // Suppress targeting during intro so the boss doesn't attack while speaking
+    @Override
+    @Nullable
+    public LivingEntity getTarget() {
+        if (!isIntroComplete()) return null;
+        return super.getTarget();
     }
 
-    private void playIdleAnimation() {
-        stopAttackAnimations();
-        this.cubicDomainAnimationState.stop();
-        this.floatingAnimationState.startIfStopped(this.tickCount);
-    }
-
-    private void stopAllAnimations() {
-        this.floatingAnimationState.stop();
-        stopAttackAnimations();
-        this.cubicDomainAnimationState.stop();
-    }
-
-    private void stopAttackAnimations() {
-        this.rightAttackAnimationState.stop();
-        this.leftAttackAnimationState.stop();
-    }
+    // -------------------------------------------------------------------------
+    // Attack
+    // -------------------------------------------------------------------------
 
     @Override
     public boolean doHurtTarget(@NotNull Entity target) {
         if (!this.level().isClientSide) {
-            startAttackAnimation();
+            triggerAttackAnimation();
         }
         return super.doHurtTarget(target);
     }
 
-    private void startAttackAnimation() {
+    private void triggerAttackAnimation() {
+        // Alternate arms: flip the current side on each hit
+        boolean lastWasRight = this.entityData.get(ATTACK_RIGHT);
         this.entityData.set(ATTACK_ANIMATION_TICK, 15);
-        this.entityData.set(ATTACK_RIGHT, this.random.nextBoolean());
+        this.entityData.set(ATTACK_RIGHT, !lastWasRight);
     }
 
     public boolean isRightAttack() {
@@ -205,9 +223,38 @@ public class TheFoolEntity extends Monster {
         return this.entityData.get(ATTACK_ANIMATION_TICK);
     }
 
-    public boolean isUsingCubicDomain() {
-        return this.entityData.get(USING_CUBIC_DOMAIN);
+    // -------------------------------------------------------------------------
+    // Client animations
+    // -------------------------------------------------------------------------
+
+    private void updateClientAnimations() {
+        if (getAttackAnimationTick() > 0) {
+            playAttackAnimation();
+        } else {
+            playIdleAnimation();
+        }
     }
+
+    private void playAttackAnimation() {
+        this.floatingAnimationState.stop();
+        if (isRightAttack()) {
+            this.leftAttackAnimationState.stop();
+            this.rightAttackAnimationState.startIfStopped(this.tickCount);
+        } else {
+            this.rightAttackAnimationState.stop();
+            this.leftAttackAnimationState.startIfStopped(this.tickCount);
+        }
+    }
+
+    private void playIdleAnimation() {
+        this.rightAttackAnimationState.stop();
+        this.leftAttackAnimationState.stop();
+        this.floatingAnimationState.startIfStopped(this.tickCount);
+    }
+
+    // -------------------------------------------------------------------------
+    // Boss bar visibility
+    // -------------------------------------------------------------------------
 
     @Override
     public void startSeenByPlayer(@NotNull ServerPlayer player) {
@@ -221,19 +268,19 @@ public class TheFoolEntity extends Monster {
         this.bossBar.removePlayer(player);
     }
 
+    // -------------------------------------------------------------------------
+    // Damage overrides
+    // -------------------------------------------------------------------------
+
+    /** Flying boss — never takes fall damage regardless of height. */
     @Override
-    protected void dropCustomDeathLoot(
-            @NotNull ServerLevel level,
-            @NotNull DamageSource source,
-            boolean hitByPlayer
-    ) {
-        super.dropCustomDeathLoot(level, source, hitByPlayer);
-        dropSoul();
+    public boolean causeFallDamage(float fallDistance, float multiplier, @NotNull DamageSource source) {
+        return false;
     }
 
-    private void dropSoul() {
-        this.spawnAtLocation(new ItemStack(ModItems.FOOL_SOUL.get()));
-    }
+    // -------------------------------------------------------------------------
+    // Sounds
+    // -------------------------------------------------------------------------
 
     @Override
     protected SoundEvent getAmbientSound() {
@@ -249,6 +296,10 @@ public class TheFoolEntity extends Monster {
     protected @NotNull SoundEvent getDeathSound() {
         return SoundEvents.WITHER_DEATH;
     }
+
+    // -------------------------------------------------------------------------
+    // Misc
+    // -------------------------------------------------------------------------
 
     @Override
     public boolean canUsePortal(boolean defaultValue) {

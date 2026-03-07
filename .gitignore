@@ -46,6 +46,9 @@ logs/
 # Generated resources
 src/generated/
 
+# Claude Code
+CLAUDE.md
+
 # Other
 *.log
 *.swp

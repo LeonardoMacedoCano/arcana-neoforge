@@ -145,12 +145,6 @@ public class DioritePedestalBlockEntity extends BlockEntity implements Container
     @Override public void clearContent(){ items.clear(); }
 
     @Override
-    public void setChanged() {
-        super.setChanged();
-        if (this.level != null && !this.level.isClientSide) this.level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
-    }
-
-    @Override
     public Packet<ClientGamePacketListener> getUpdatePacket() {
         return ClientboundBlockEntityDataPacket.create(this);
     }

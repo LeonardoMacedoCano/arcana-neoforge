@@ -75,6 +75,10 @@ public class DiaryGuideDream implements DreamType {
         ArcanaLog.debug(MODULE, "Diary dream successfully delivered to {}", player.getName().getString());
     }
 
+    public static void clearState() {
+        ORDER.clear();
+    }
+
     private List<Integer> shuffled(int size) {
         List<Integer> list = new ArrayList<>();
         for (int i = 0; i < size; i++) list.add(i);

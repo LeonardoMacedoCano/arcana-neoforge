@@ -10,7 +10,7 @@ public class ArcanaLog {
     }
 
     public static void info(String module, String message, Object... args) {
-        ArcanaMod.LOGGER.info(format(module, formatArgs(message, args)));
+        ArcanaMod.LOGGER.info(format(module, message), args);
     }
 
     public static void debug(String module, String message) {
@@ -18,7 +18,7 @@ public class ArcanaLog {
     }
 
     public static void debug(String module, String message, Object... args) {
-        ArcanaMod.LOGGER.debug(format(module, formatArgs(message, args)));
+        ArcanaMod.LOGGER.debug(format(module, message), args);
     }
 
     public static void warn(String module, String message) {
@@ -26,7 +26,7 @@ public class ArcanaLog {
     }
 
     public static void warn(String module, String message, Object... args) {
-        ArcanaMod.LOGGER.warn(format(module, formatArgs(message, args)));
+        ArcanaMod.LOGGER.warn(format(module, message), args);
     }
 
     public static void error(String module, String message) {
@@ -34,7 +34,7 @@ public class ArcanaLog {
     }
 
     public static void error(String module, String message, Object... args) {
-        ArcanaMod.LOGGER.error(format(module, formatArgs(message, args)));
+        ArcanaMod.LOGGER.error(format(module, message), args);
     }
 
     public static void playerInfo(String module, ServerPlayer player, String message) {
@@ -63,8 +63,5 @@ public class ArcanaLog {
                 " :: " + text;
     }
 
-    private static String formatArgs(String message, Object... args) {
-        String formatted = message.replace("{}", "%s");
-        return args == null || args.length == 0 ? message : String.format(formatted, args);
-    }
 }
+

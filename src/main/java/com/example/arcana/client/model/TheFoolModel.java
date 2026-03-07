@@ -154,11 +154,6 @@ public class TheFoolModel extends HierarchicalModel<TheFoolEntity> {
             return;
         }
 
-        if (entity.isUsingCubicDomain()) {
-            animate(entity.cubicDomainAnimationState, TheFoolAnimations.CUBIC_DOMAIN, ageInTicks);
-            return;
-        }
-
         animate(entity.floatingAnimationState, TheFoolAnimations.FLOATING, ageInTicks);
     }
 

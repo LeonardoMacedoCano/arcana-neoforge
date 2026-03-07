@@ -24,6 +24,7 @@ public class ClientSetup {
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
         ArcanaLog.info(MODULE, "Client setup starting");
+        ArcanaLog.info(MODULE, "Welcome, {}", Minecraft.getInstance().getUser().getName());
         event.enqueueWork(() -> DiaryItem.setScreenOpener(player ->
                 Minecraft.getInstance().setScreen(new DiaryScreen())
         ));

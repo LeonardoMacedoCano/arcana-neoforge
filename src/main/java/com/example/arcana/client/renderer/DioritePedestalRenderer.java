@@ -2,12 +2,16 @@ package com.example.arcana.client.renderer;
 
 import com.example.arcana.content.blockentity.DioritePedestalBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
-import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class DioritePedestalRenderer implements BlockEntityRenderer<DioritePedestalBlockEntity> {
 
@@ -22,28 +26,28 @@ public class DioritePedestalRenderer implements BlockEntityRenderer<DioritePedes
     ) {
         var renderer = Minecraft.getInstance().getItemRenderer();
 
-        int itemCount = be.getContainerSize();
-        float spacing = 0.20f;
+        List<ItemStack> items = new ArrayList<>();
+        for (int i = 0; i < be.getContainerSize(); i++) {
+            ItemStack stack = be.getItem(i);
+            if (!stack.isEmpty()) items.add(stack);
+        }
+        if (items.isEmpty()) return;
 
-        for (int i = 0; i < itemCount; i++) {
-            var item = be.getItem(i);
-            if (item.isEmpty()) continue;
+        final float ITEM_Y     = 1.3f;
+        final float ITEM_SCALE = 0.22f;
 
+        for (int i = 0; i < items.size(); i++) {
             pose.pushPose();
 
-            assert be.getLevel() != null;
-            var shape = be.getBlockState().getShape(be.getLevel(), be.getBlockPos());
-            double height = shape.max(Direction.Axis.Y);
+            float xOffset = computeOffset(i, items.size());
 
-            float xOffset = computeOffset(i, itemCount, spacing);
-
-            pose.translate(0.5 + xOffset, height + 0.02, 0.5);
-            pose.scale(0.3f, 0.3f, 0.3f);
-            pose.mulPose(com.mojang.math.Axis.XP.rotationDegrees(90f));
+            pose.translate(0.5f + xOffset, ITEM_Y, 0.5f);
+            pose.mulPose(Axis.XP.rotationDegrees(-90f));
+            pose.scale(ITEM_SCALE, ITEM_SCALE, ITEM_SCALE);
 
             renderer.renderStatic(
-                    item,
-                    ItemDisplayContext.FIXED,
+                    items.get(i),
+                    ItemDisplayContext.NONE,
                     light,
                     overlay,
                     pose,
@@ -56,10 +60,11 @@ public class DioritePedestalRenderer implements BlockEntityRenderer<DioritePedes
         }
     }
 
-    private float computeOffset(int index, int totalItems, float spacing) {
+    private float computeOffset(int index, int totalItems) {
+        final float SPACING    = 0.28f;
         if (totalItems == 1) return 0;
-        float start = -((totalItems - 1) * spacing) / 2f;
-        return start + index * spacing;
+        float start = -((totalItems - 1) * SPACING) / 2f;
+        return start + index * SPACING;
     }
 
     @Override

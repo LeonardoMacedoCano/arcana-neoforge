@@ -58,7 +58,6 @@ public class TheFoolEntity extends Monster {
     public final AnimationState floatingAnimationState    = new AnimationState();
     public final AnimationState rightAttackAnimationState = new AnimationState();
     public final AnimationState leftAttackAnimationState  = new AnimationState();
-    public final AnimationState cubicDomainAnimationState = new AnimationState();
     public final AnimationState stunnedAnimationState     = new AnimationState();
     public final AnimationState chargingAnimationState    = new AnimationState();
     public final AnimationState windupAnimationState      = new AnimationState();
@@ -71,9 +70,12 @@ public class TheFoolEntity extends Monster {
     private static final int INTRO_LINE_1_TICK = 1;
     private static final int INTRO_LINE_2_TICK = 60;
 
+    private static final double MAX_DASH_ANGLE_TICK = 0.03;
+
     private int    introTicks       = 0;
     private int    stunTicks        = 0;
     private Player dashingToward    = null;
+    private Vec3   dashDirection    = null;
     private double dashSpeed        = 1.2;
     private boolean waitingForDeath = false;
     private int    deathHoldTicks   = 0;
@@ -113,9 +115,10 @@ public class TheFoolEntity extends Monster {
 
         private static final double MELEE_DIST        = 4.0;
         private static final double MEDIUM_DIST       = 12.0;
-        private static final double NORMAL_DASH_SPEED = 1.2;
-        private static final double SUPER_DASH_SPEED  = 1.8;
-        private static final int    WINDUP_TICKS      = 15;
+        private static final double NORMAL_DASH_SPEED  = 1.2;
+        private static final double SUPER_DASH_SPEED   = 1.8;
+        private static final int    WINDUP_TICKS       = 12;
+        private static final int    WINDUP_CANCEL_TICKS = 12;
         private static final int    MELEE_TICKS       = 40;
         private static final int    RETREAT_TICKS     = 25;
         private static final int    RECOVER_TICKS     = 20;
@@ -143,7 +146,7 @@ public class TheFoolEntity extends Monster {
         @Override
         public boolean canUse() {
             if (cooldown > 0) { cooldown--; return false; }
-            if (isStunned() || !isIntroComplete()) return false;
+            if (isStunned() || isIntroComplete()) return false;
             LivingEntity t = getTarget();
             return t instanceof Player p && p.isAlive() && distanceTo(p) <= DASH_MAX_RANGE;
         }
@@ -151,6 +154,7 @@ public class TheFoolEntity extends Monster {
         @Override
         public void start() {
             target      = (Player) getTarget();
+            assert target != null;
             circleAngle = Math.atan2(getZ() - target.getZ(), getX() - target.getX());
             circleDir   = random.nextBoolean() ? 1 : -1;
             evaluateState();
@@ -200,6 +204,7 @@ public class TheFoolEntity extends Monster {
             dashType      = (dist > MEDIUM_DIST) ? DashType.SUPER : DashType.NORMAL;
             dashSpeed     = (dashType == DashType.SUPER) ? SUPER_DASH_SPEED : NORMAL_DASH_SPEED;
             dashingToward = target;
+            dashDirection = null;
             enterPhase(Phase.WINDUP);
             entityData.set(IS_WINDING_UP, true);
         }
@@ -258,8 +263,21 @@ public class TheFoolEntity extends Monster {
 
         private void tickWindup() {
             getLookControl().setLookAt(target, 30f, 30f);
+
+            if (phaseTimer < WINDUP_CANCEL_TICKS && target.isBlocking()) {
+                entityData.set(IS_WINDING_UP, false);
+                dashingToward = null;
+                dashDirection = null;
+                enterPhase(Phase.CIRCLING);
+                return;
+            }
+
             if (phaseTimer >= WINDUP_TICKS) {
                 entityData.set(IS_WINDING_UP, false);
+                if (dashingToward != null && dashingToward.isAlive()) {
+                    Vec3 toTarget = dashingToward.position().add(0, 1.0, 0).subtract(position());
+                    dashDirection = toTarget.lengthSqr() > 1e-6 ? toTarget.normalize() : Vec3.ZERO;
+                }
                 entityData.set(IS_CHARGING, true);
                 enterPhase(Phase.DASHING);
             }
@@ -290,6 +308,7 @@ public class TheFoolEntity extends Monster {
         public void stop() {
             cooldown      = FULL_COOLDOWN;
             dashingToward = null;
+            dashDirection = null;
             entityData.set(IS_CHARGING, false);
             entityData.set(IS_WINDING_UP, false);
             target     = null;
@@ -298,10 +317,6 @@ public class TheFoolEntity extends Monster {
         }
     }
 
-    // customServerAiStep runs AFTER moveControl.tick() so our velocity is the final one.
-    // During WINDUP: rise to player_Y + 2 blocks smoothly (proportional controller).
-    // During DASHING: fly straight at player torso — starts from above so mostly diagonal,
-    //   avoiding most horizontal obstacles without needing navigation.
     @Override
     protected void customServerAiStep() {
         if (level().isClientSide || dashingToward == null || !dashingToward.isAlive()) return;
@@ -312,8 +327,27 @@ public class TheFoolEntity extends Monster {
             double vy      = Math.max(-0.35, Math.min(0.35, dy * 0.5));
             setDeltaMovement(0, vy, 0);
         } else if (isCharging()) {
+            if (dashDirection == null) {
+                Vec3 t = dashingToward.position().add(0, 1.0, 0).subtract(this.position());
+                dashDirection = t.lengthSqr() > 1e-6 ? t.normalize() : Vec3.ZERO;
+            }
             Vec3 toTarget = dashingToward.position().add(0, 1.0, 0).subtract(this.position());
-            setDeltaMovement(toTarget.normalize().scale(dashSpeed));
+            if (toTarget.lengthSqr() > 1e-6) {
+                toTarget = toTarget.normalize();
+                double dot   = Math.max(-1.0, Math.min(1.0, dashDirection.dot(toTarget)));
+                double angle = Math.acos(dot);
+                if (angle > MAX_DASH_ANGLE_TICK) {
+                    double t = MAX_DASH_ANGLE_TICK / angle;
+                    dashDirection = new Vec3(
+                            dashDirection.x + (toTarget.x - dashDirection.x) * t,
+                            dashDirection.y + (toTarget.y - dashDirection.y) * t,
+                            dashDirection.z + (toTarget.z - dashDirection.z) * t
+                    ).normalize();
+                } else {
+                    dashDirection = toTarget;
+                }
+            }
+            setDeltaMovement(dashDirection.scale(dashSpeed));
         }
     }
 
@@ -351,7 +385,7 @@ public class TheFoolEntity extends Monster {
             updateBossBar();
             updateAttackAnimationTick();
             updateStun();
-            if (!isIntroComplete()) handleIntro();
+            if (isIntroComplete()) handleIntro();
         }
     }
 
@@ -374,7 +408,7 @@ public class TheFoolEntity extends Monster {
     }
 
     private boolean isIntroComplete() {
-        return introTicks >= INTRO_DURATION;
+        return introTicks < INTRO_DURATION;
     }
 
     private void handleIntro() {
@@ -397,7 +431,7 @@ public class TheFoolEntity extends Monster {
     @Override
     @Nullable
     public LivingEntity getTarget() {
-        if (!isIntroComplete()) return null;
+        if (isIntroComplete()) return null;
         if (isStunned()) return null;
         return super.getTarget();
     }
@@ -441,6 +475,7 @@ public class TheFoolEntity extends Monster {
         this.entityData.set(IS_STUNNED, true);
         this.setDeltaMovement(0, 0, 0);
         dashingToward = null;
+        dashDirection = null;
         this.entityData.set(IS_CHARGING, false);
         this.entityData.set(IS_WINDING_UP, false);
     }
@@ -458,6 +493,7 @@ public class TheFoolEntity extends Monster {
         deathHoldTicks  = 0;
         setNoGravity(false);
         dashingToward = null;
+        dashDirection = null;
         this.entityData.set(IS_CHARGING, false);
         this.entityData.set(IS_WINDING_UP, false);
         if (this.level() instanceof ServerLevel serverLevel) {

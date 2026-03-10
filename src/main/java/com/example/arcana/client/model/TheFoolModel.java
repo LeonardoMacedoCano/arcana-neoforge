@@ -25,7 +25,6 @@ public class TheFoolModel extends HierarchicalModel<TheFoolEntity> {
 
     private final ModelPart root;
     private final ModelPart theFool;
-    private final ModelPart waist;
     private final ModelPart head;
     private final ModelPart body;
     private final ModelPart rightArm;
@@ -37,7 +36,7 @@ public class TheFoolModel extends HierarchicalModel<TheFoolEntity> {
         this.root = root;
 
         this.theFool = root.getChild("The_Fool");
-        this.waist = theFool.getChild("Waist");
+        ModelPart waist = theFool.getChild("Waist");
 
         this.head = waist.getChild("Head");
         this.body = waist.getChild("Body");
@@ -145,6 +144,26 @@ public class TheFoolModel extends HierarchicalModel<TheFoolEntity> {
     }
 
     private void applyAnimations(TheFoolEntity entity, float ageInTicks) {
+        if (entity.isDeadOrDying()) {
+            animate(entity.deathAnimationState, TheFoolAnimations.DEATH, ageInTicks);
+            return;
+        }
+
+        if (entity.isStunned()) {
+            animate(entity.stunnedAnimationState, TheFoolAnimations.STUNNED, ageInTicks);
+            return;
+        }
+
+        if (entity.isWindingUp()) {
+            animate(entity.windupAnimationState, TheFoolAnimations.WINDUP, ageInTicks);
+            return;
+        }
+
+        if (entity.isCharging()) {
+            animate(entity.chargingAnimationState, TheFoolAnimations.CHARGING, ageInTicks);
+            return;
+        }
+
         if (entity.isAggressive() && entity.getAttackAnimationTick() > 0) {
             if (entity.isRightAttack()) {
                 animate(entity.rightAttackAnimationState, TheFoolAnimations.RIGHT_ATTACK, ageInTicks);

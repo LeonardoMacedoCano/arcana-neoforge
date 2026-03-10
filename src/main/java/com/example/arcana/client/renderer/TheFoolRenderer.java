@@ -14,17 +14,10 @@ public class TheFoolRenderer extends MobRenderer<TheFoolEntity, TheFoolModel> {
     private static final float BOSS_SCALE = 1.2F;
 
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(
-                    ArcanaMod.MODID,
-                    "textures/entity/the_fool.png"
-            );
+            ResourceLocation.fromNamespaceAndPath(ArcanaMod.MODID, "textures/entity/the_fool.png");
 
     public TheFoolRenderer(EntityRendererProvider.Context context) {
-        super(
-                context,
-                new TheFoolModel(context.bakeLayer(TheFoolModel.LAYER_LOCATION)),
-                0.8F
-        );
+        super(context, new TheFoolModel(context.bakeLayer(TheFoolModel.LAYER_LOCATION)), 0.8F);
     }
 
     @Override
@@ -33,11 +26,12 @@ public class TheFoolRenderer extends MobRenderer<TheFoolEntity, TheFoolModel> {
     }
 
     @Override
-    protected void scale(
-            @NotNull TheFoolEntity entity,
-            @NotNull PoseStack poseStack,
-            float partialTickTime
-    ) {
+    protected void scale(@NotNull TheFoolEntity entity, @NotNull PoseStack poseStack, float partialTickTime) {
         poseStack.scale(BOSS_SCALE, BOSS_SCALE, BOSS_SCALE);
+    }
+
+    @Override
+    protected float getFlipDegrees(@NotNull TheFoolEntity entity) {
+        return 0.0F;
     }
 }

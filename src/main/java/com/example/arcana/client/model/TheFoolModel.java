@@ -154,6 +154,11 @@ public class TheFoolModel extends HierarchicalModel<TheFoolEntity> {
             return;
         }
 
+        if (entity.isPushing()) {
+            animate(entity.pushAnimationState, TheFoolAnimations.PUSH, ageInTicks);
+            return;
+        }
+
         if (entity.isWindingUp()) {
             animate(entity.windupAnimationState, TheFoolAnimations.WINDUP, ageInTicks);
             return;
@@ -164,7 +169,7 @@ public class TheFoolModel extends HierarchicalModel<TheFoolEntity> {
             return;
         }
 
-        if (entity.isAggressive() && entity.getAttackAnimationTick() > 0) {
+        if (entity.getAttackAnimationTick() > 0) {
             if (entity.isRightAttack()) {
                 animate(entity.rightAttackAnimationState, TheFoolAnimations.RIGHT_ATTACK, ageInTicks);
             } else {

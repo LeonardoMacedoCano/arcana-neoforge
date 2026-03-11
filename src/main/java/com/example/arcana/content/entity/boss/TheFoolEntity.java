@@ -1,5 +1,6 @@
 package com.example.arcana.content.entity.boss;
 
+import com.example.arcana.registry.ModItems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -27,7 +28,9 @@ import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
@@ -42,7 +45,17 @@ public class TheFoolEntity extends Monster {
     private static final int    STUN_DURATION        = 100;
     private static final int    SHIELD_DISABLE_TICKS = 300;
     private static final double DASH_MAX_RANGE       = 24.0;
-    private static final int    DEATH_EXTEND_TICKS   = 60;
+    private static final int    DEATH_EXTEND_TICKS   = 100;
+
+    private static final int   RAGE_HIT_THRESHOLD  = 4;
+    private static final int   RAGE_WINDOW_TICKS   = 60;
+    private static final int   SHOCKWAVE_COOLDOWN  = 120;
+    private static final float COUNTER_CHANCE      = 0.35f;
+    private static final int    PUSH_DURATION     = 12;
+    private static final int    PUSH_HIT_TICK     = 6;
+    private static final int    PUSH_COOLDOWN_MAX = 300;
+    private static final double PUSH_RANGE        = 5.0;
+    private static final int    DEATH_SPEAK_TICK  = 50;
 
     private static final EntityDataAccessor<Integer> ATTACK_ANIMATION_TICK =
             SynchedEntityData.defineId(TheFoolEntity.class, EntityDataSerializers.INT);
@@ -54,6 +67,8 @@ public class TheFoolEntity extends Monster {
             SynchedEntityData.defineId(TheFoolEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> IS_WINDING_UP =
             SynchedEntityData.defineId(TheFoolEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> IS_PUSHING =
+            SynchedEntityData.defineId(TheFoolEntity.class, EntityDataSerializers.BOOLEAN);
 
     public final AnimationState floatingAnimationState    = new AnimationState();
     public final AnimationState rightAttackAnimationState = new AnimationState();
@@ -61,6 +76,7 @@ public class TheFoolEntity extends Monster {
     public final AnimationState stunnedAnimationState     = new AnimationState();
     public final AnimationState chargingAnimationState    = new AnimationState();
     public final AnimationState windupAnimationState      = new AnimationState();
+    public final AnimationState pushAnimationState        = new AnimationState();
     public final AnimationState deathAnimationState       = new AnimationState();
 
     private final ServerBossEvent bossBar = new ServerBossEvent(
@@ -77,8 +93,14 @@ public class TheFoolEntity extends Monster {
     private Player dashingToward    = null;
     private Vec3   dashDirection    = null;
     private double dashSpeed        = 1.2;
-    private boolean waitingForDeath = false;
-    private int    deathHoldTicks   = 0;
+    private boolean waitingForDeath  = false;
+    private int    deathHoldTicks    = 0;
+    private int    recentHitCount    = 0;
+    private int    hitWindowTimer    = 0;
+    private int    shockwaveCooldown = 0;
+    private int    pushTicks         = 0;
+    private int    pushCooldown      = 0;
+    private Player pushTarget        = null;
 
     public TheFoolEntity(EntityType<? extends Monster> type, Level level) {
         super(type, level);
@@ -368,6 +390,7 @@ public class TheFoolEntity extends Monster {
         builder.define(IS_STUNNED, false);
         builder.define(IS_CHARGING, false);
         builder.define(IS_WINDING_UP, false);
+        builder.define(IS_PUSHING, false);
     }
 
     @Override
@@ -375,8 +398,14 @@ public class TheFoolEntity extends Monster {
         if (waitingForDeath && !level().isClientSide) {
             deathHoldTicks++;
             if (deathHoldTicks < DEATH_EXTEND_TICKS) deathTime = 0;
-            Vec3 vel = getDeltaMovement();
-            if (vel.y < -0.15) setDeltaMovement(vel.x * 0.5, -0.15, vel.z * 0.5);
+            setDeltaMovement(0, 0, 0);
+            if (deathHoldTicks == DEATH_SPEAK_TICK && level() instanceof ServerLevel serverLevel) {
+                serverLevel.getEntitiesOfClass(ServerPlayer.class, this.getBoundingBox().inflate(128))
+                        .forEach(p -> p.sendSystemMessage(
+                                Component.translatable("entity.arcana.the_fool.death")
+                                        .withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC)
+                        ));
+            }
         }
         super.tick();
         if (this.level().isClientSide) {
@@ -385,6 +414,9 @@ public class TheFoolEntity extends Monster {
             updateBossBar();
             updateAttackAnimationTick();
             updateStun();
+            updateRageTimers();
+            if (pushTicks > 0) tickPush();
+            else if (!isStunned() && !isCharging() && pushCooldown == 0) checkPushTrigger();
             if (isIntroComplete()) handleIntro();
         }
     }
@@ -413,6 +445,8 @@ public class TheFoolEntity extends Monster {
 
     private void handleIntro() {
         introTicks++;
+        Player nearest = level().getNearestPlayer(this, 64);
+        if (nearest != null) getLookControl().setLookAt(nearest, 30f, 30f);
         if (introTicks == INTRO_LINE_1_TICK) {
             broadcastMessage(Component.translatable("entity.arcana.the_fool.intro.line1")
                     .withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC));
@@ -438,8 +472,87 @@ public class TheFoolEntity extends Monster {
 
     @Override
     public boolean hurt(@NotNull DamageSource source, float amount) {
+        if (isIntroComplete()) return false;
         if (source.is(DamageTypeTags.IS_PROJECTILE)) return false;
-        return super.hurt(source, Math.min(amount, MAX_DAMAGE_PER_HIT));
+        boolean result = super.hurt(source, Math.min(amount, MAX_DAMAGE_PER_HIT));
+        if (result && !level().isClientSide) trackRage(source);
+        return result;
+    }
+
+    private void updateRageTimers() {
+        if (hitWindowTimer > 0) hitWindowTimer--;
+        else recentHitCount = 0;
+        if (shockwaveCooldown > 0) shockwaveCooldown--;
+        if (pushCooldown > 0) pushCooldown--;
+    }
+
+    private void trackRage(DamageSource source) {
+        if (isStunned()) return;
+
+        recentHitCount++;
+        hitWindowTimer = RAGE_WINDOW_TICKS;
+
+        if (random.nextFloat() < COUNTER_CHANCE) {
+            Entity attacker = source.getDirectEntity();
+            if (attacker instanceof LivingEntity le) {
+                le.knockback(1.8, this.getX() - le.getX(), this.getZ() - le.getZ());
+            }
+        }
+
+        if (recentHitCount >= 2 && pushTicks == 0 && pushCooldown == 0) {
+            Entity attacker = source.getDirectEntity();
+            if (attacker instanceof Player player && !player.isCreative() && !player.isSpectator()) {
+                pushTicks  = PUSH_DURATION;
+                pushTarget = player;
+                this.entityData.set(IS_PUSHING, true);
+            }
+        }
+
+        if (recentHitCount >= RAGE_HIT_THRESHOLD && shockwaveCooldown == 0) {
+            emitRageShockwave();
+            recentHitCount    = 0;
+            shockwaveCooldown = SHOCKWAVE_COOLDOWN;
+        }
+    }
+
+    private void emitRageShockwave() {
+        if (!(level() instanceof ServerLevel sl)) return;
+        sl.getEntitiesOfClass(Player.class, getBoundingBox().inflate(7))
+                .forEach(p -> {
+                    p.knockback(3.0, this.getX() - p.getX(), this.getZ() - p.getZ());
+                    p.setDeltaMovement(p.getDeltaMovement().add(0, 0.9, 0));
+                });
+        this.playSound(SoundEvents.WITHER_SHOOT, 1.2f, 0.6f);
+    }
+
+    private void checkPushTrigger() {
+        if (!(level() instanceof ServerLevel sl)) return;
+        for (Player p : sl.players()) {
+            if (p.isAlive() && !p.isSpectator() && !p.isCreative() && this.distanceTo(p) < PUSH_RANGE) {
+                pushTicks  = PUSH_DURATION;
+                pushTarget = p;
+                this.entityData.set(IS_PUSHING, true);
+                return;
+            }
+        }
+    }
+
+    private void tickPush() {
+        pushTicks--;
+        if (pushTarget != null) getLookControl().setLookAt(pushTarget, 30f, 30f);
+        if (pushTicks == PUSH_HIT_TICK && pushTarget != null && pushTarget.isAlive()
+                && !pushTarget.isCreative() && !pushTarget.isSpectator()) {
+            pushTarget.knockback(2.8, this.getX() - pushTarget.getX(), this.getZ() - pushTarget.getZ());
+            pushTarget.setDeltaMovement(pushTarget.getDeltaMovement().add(0, 0.45, 0));
+            if (pushTarget instanceof ServerPlayer sp) {
+                sp.connection.send(new ClientboundSetEntityMotionPacket(pushTarget));
+            }
+        }
+        if (pushTicks <= 0) {
+            this.entityData.set(IS_PUSHING, false);
+            pushTarget   = null;
+            pushCooldown = PUSH_COOLDOWN_MAX;
+        }
     }
 
     @Override
@@ -476,8 +589,11 @@ public class TheFoolEntity extends Monster {
         this.setDeltaMovement(0, 0, 0);
         dashingToward = null;
         dashDirection = null;
+        pushTarget    = null;
+        pushTicks     = 0;
         this.entityData.set(IS_CHARGING, false);
         this.entityData.set(IS_WINDING_UP, false);
+        this.entityData.set(IS_PUSHING, false);
     }
 
     private void triggerAttackAnimation() {
@@ -487,22 +603,25 @@ public class TheFoolEntity extends Monster {
     }
 
     @Override
+    protected void dropCustomDeathLoot(@NotNull ServerLevel serverLevel, @NotNull DamageSource source, boolean recentlyHit) {
+        super.dropCustomDeathLoot(serverLevel, source, recentlyHit);
+        this.spawnAtLocation(new ItemStack(ModItems.FOOL_SOUL.get()));
+    }
+
+    @Override
     public void die(@NotNull DamageSource source) {
         super.die(source);
         waitingForDeath = true;
         deathHoldTicks  = 0;
-        setNoGravity(false);
+        setNoGravity(true);
+        setDeltaMovement(0, 0, 0);
         dashingToward = null;
         dashDirection = null;
+        pushTarget    = null;
+        pushTicks     = 0;
         this.entityData.set(IS_CHARGING, false);
         this.entityData.set(IS_WINDING_UP, false);
-        if (this.level() instanceof ServerLevel serverLevel) {
-            serverLevel.getEntitiesOfClass(ServerPlayer.class, this.getBoundingBox().inflate(128))
-                    .forEach(p -> p.sendSystemMessage(
-                            Component.translatable("entity.arcana.the_fool.death")
-                                    .withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC)
-                    ));
-        }
+        this.entityData.set(IS_PUSHING, false);
     }
 
     private void updateClientAnimations() {
@@ -519,6 +638,13 @@ public class TheFoolEntity extends Monster {
             return;
         }
         stunnedAnimationState.stop();
+
+        if (isPushing()) {
+            stopAllExcept(pushAnimationState);
+            pushAnimationState.startIfStopped(this.tickCount);
+            return;
+        }
+        pushAnimationState.stop();
 
         if (isWindingUp()) {
             stopAllExcept(windupAnimationState);
@@ -554,7 +680,8 @@ public class TheFoolEntity extends Monster {
     private void stopAllExcept(AnimationState keep) {
         for (AnimationState s : new AnimationState[]{
                 floatingAnimationState, rightAttackAnimationState, leftAttackAnimationState,
-                stunnedAnimationState, chargingAnimationState, windupAnimationState, deathAnimationState
+                stunnedAnimationState, chargingAnimationState, windupAnimationState,
+                pushAnimationState, deathAnimationState
         }) {
             if (s != keep) s.stop();
         }
@@ -565,6 +692,7 @@ public class TheFoolEntity extends Monster {
     public boolean isStunned()            { return this.entityData.get(IS_STUNNED); }
     public boolean isCharging()           { return this.entityData.get(IS_CHARGING); }
     public boolean isWindingUp()          { return this.entityData.get(IS_WINDING_UP); }
+    public boolean isPushing()            { return this.entityData.get(IS_PUSHING); }
 
     @Override
     public void startSeenByPlayer(@NotNull ServerPlayer player) {

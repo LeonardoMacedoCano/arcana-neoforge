@@ -30,6 +30,7 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -88,8 +89,9 @@ public class TheFoolEntity extends Monster {
 
     private static final double MAX_DASH_ANGLE_TICK = 0.03;
 
-    private int    introTicks       = 0;
-    private int    stunTicks        = 0;
+    private int     introTicks       = 0;
+    private boolean introCompleted   = false;
+    private int     stunTicks        = 0;
     private Player dashingToward    = null;
     private Vec3   dashDirection    = null;
     private double dashSpeed        = 1.2;
@@ -168,7 +170,7 @@ public class TheFoolEntity extends Monster {
         @Override
         public boolean canUse() {
             if (cooldown > 0) { cooldown--; return false; }
-            if (isStunned() || isIntroComplete()) return false;
+            if (isStunned() || isIntroInProgress()) return false;
             LivingEntity t = getTarget();
             return t instanceof Player p && p.isAlive() && distanceTo(p) <= DASH_MAX_RANGE;
         }
@@ -417,7 +419,7 @@ public class TheFoolEntity extends Monster {
             updateRageTimers();
             if (pushTicks > 0) tickPush();
             else if (!isStunned() && !isCharging() && pushCooldown == 0) checkPushTrigger();
-            if (isIntroComplete()) handleIntro();
+            if (isIntroInProgress()) handleIntro();
         }
     }
 
@@ -439,8 +441,8 @@ public class TheFoolEntity extends Monster {
         }
     }
 
-    private boolean isIntroComplete() {
-        return introTicks < INTRO_DURATION;
+    private boolean isIntroInProgress() {
+        return !introCompleted;
     }
 
     private void handleIntro() {
@@ -454,6 +456,9 @@ public class TheFoolEntity extends Monster {
             broadcastMessage(Component.translatable("entity.arcana.the_fool.intro.line2")
                     .withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD));
         }
+        if (introTicks >= INTRO_DURATION) {
+            introCompleted = true;
+        }
     }
 
     private void broadcastMessage(Component message) {
@@ -465,14 +470,14 @@ public class TheFoolEntity extends Monster {
     @Override
     @Nullable
     public LivingEntity getTarget() {
-        if (isIntroComplete()) return null;
+        if (isIntroInProgress()) return null;
         if (isStunned()) return null;
         return super.getTarget();
     }
 
     @Override
     public boolean hurt(@NotNull DamageSource source, float amount) {
-        if (isIntroComplete()) return false;
+        if (isIntroInProgress()) return false;
         if (source.is(DamageTypeTags.IS_PROJECTILE)) return false;
         boolean result = super.hurt(source, Math.min(amount, MAX_DAMAGE_PER_HIT));
         if (result && !level().isClientSide) trackRage(source);
@@ -712,6 +717,19 @@ public class TheFoolEntity extends Monster {
     @Override protected @NotNull SoundEvent getHurtSound(@NotNull DamageSource s)      { return SoundEvents.WITHER_HURT; }
     @Override protected @NotNull SoundEvent getDeathSound()                            { return SoundEvents.WITHER_DEATH; }
     @Override public    boolean canUsePortal(boolean d)                                { return false; }
+
+    @Override
+    public void addAdditionalSaveData(@NotNull CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+        tag.putBoolean("introCompleted", introCompleted);
+    }
+
+    @Override
+    public void readAdditionalSaveData(@NotNull CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        introCompleted = tag.getBoolean("introCompleted");
+        if (introCompleted) introTicks = INTRO_DURATION;
+    }
 
     @Override
     public void setCustomName(Component name) {

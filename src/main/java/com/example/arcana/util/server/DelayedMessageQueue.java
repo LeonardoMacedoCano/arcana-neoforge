@@ -29,7 +29,10 @@ public class DelayedMessageQueue {
 
         if (timer >= delayTicks) {
             timer = 0;
-            player.sendSystemMessage(messages.poll());
+            Component msg = messages.poll();
+            if (msg != null && player.connection != null) {
+                player.sendSystemMessage(msg);
+            }
         }
 
         return messages.isEmpty();

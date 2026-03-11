@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.server.level.ServerLevel;
 import net.neoforged.neoforge.event.entity.item.ItemTossEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerContainerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -25,6 +26,9 @@ public class DiaryPersistenceHandler {
     private static final Map<UUID, Long> SCHEDULED_RETURNS = new HashMap<>();
     private static final int RETURN_DELAY_TICKS = 100;
     private static final Map<UUID, TrackedDrop> TRACKED_DROPS = new HashMap<>();
+
+    private static int bondCheckTick = 0;
+    private static final int BOND_CHECK_INTERVAL = 40;
 
     private record TrackedDrop(UUID owner, UUID entityUuid, long expireTick) {}
 
@@ -79,8 +83,14 @@ public class DiaryPersistenceHandler {
 
     private static void processTrackedDrops(ServerTickEvent.Post event, long tick) {
         TRACKED_DROPS.values().removeIf(drop -> {
-            var level = event.getServer().overworld();
-            ItemEntity entity = (ItemEntity) level.getEntity(drop.entityUuid());
+            ItemEntity entity = null;
+            for (ServerLevel level : event.getServer().getAllLevels()) {
+                var found = level.getEntity(drop.entityUuid());
+                if (found instanceof ItemEntity ie) {
+                    entity = ie;
+                    break;
+                }
+            }
 
             if (entity == null) {
                 ServerPlayer owner = event.getServer().getPlayerList().getPlayer(drop.owner());
@@ -122,6 +132,8 @@ public class DiaryPersistenceHandler {
     }
 
     private static void checkDiaryBondForAllPlayers(ServerTickEvent.Post event) {
+        if (++bondCheckTick < BOND_CHECK_INTERVAL) return;
+        bondCheckTick = 0;
         for (ServerPlayer player : event.getServer().getPlayerList().getPlayers()) {
             ensureDiaryBond(player);
         }
@@ -181,17 +193,18 @@ public class DiaryPersistenceHandler {
     }
 
     private static void sendDiaryReminderMessage(ServerPlayer player) {
+        List<Component> msgs = DiaryMessageLoader.getMessages(player);
+        if (msgs.isEmpty()) return;
+
         UUID id = player.getUUID();
-        Deque<Integer> order = PLAYER_MESSAGE_ORDER.computeIfAbsent(id, k -> generateMessageOrder());
+        Deque<Integer> order = PLAYER_MESSAGE_ORDER.computeIfAbsent(id, k -> generateMessageOrder(msgs.size()));
 
         if (order.isEmpty()) {
-            order = generateMessageOrder();
+            order = generateMessageOrder(msgs.size());
             PLAYER_MESSAGE_ORDER.put(id, order);
         }
 
         int index = order.removeFirst();
-
-        List<Component> msgs = DiaryMessageLoader.getMessages(player);
         if (index >= msgs.size()) index = 0;
 
         DelayedMessageQueue queue = new DelayedMessageQueue(player, 20);
@@ -199,8 +212,9 @@ public class DiaryPersistenceHandler {
         DelayedMessageHandler.addQueue(queue);
     }
 
-    private static Deque<Integer> generateMessageOrder() {
-        List<Integer> list = Arrays.asList(0, 1, 2, 3, 4);
+    private static Deque<Integer> generateMessageOrder(int size) {
+        List<Integer> list = new ArrayList<>();
+        for (int i = 0; i < size; i++) list.add(i);
         Collections.shuffle(list, RANDOM);
         return new ArrayDeque<>(list);
     }
@@ -219,6 +233,7 @@ public class DiaryPersistenceHandler {
         PLAYER_MESSAGE_ORDER.clear();
         SCHEDULED_RETURNS.clear();
         TRACKED_DROPS.clear();
+        bondCheckTick = 0;
         ArcanaLog.info(MODULE, "Static state cleared on server stop");
     }
 

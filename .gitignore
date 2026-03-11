@@ -56,3 +56,5 @@ CLAUDE.md
 *~
 .cache
 *.tmp
+
+.omc/

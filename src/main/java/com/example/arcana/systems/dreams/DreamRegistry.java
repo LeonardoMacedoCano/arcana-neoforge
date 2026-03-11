@@ -8,6 +8,7 @@ public class DreamRegistry {
 
     public static void init() {
         ArcanaLog.debug(MODULE, "Initializing DreamRegistry");
+        DreamManager.clear();
         DreamManager.register(new DiaryGuideDream());
         ArcanaLog.debug(MODULE, "DreamRegistry initialized successfully");
     }

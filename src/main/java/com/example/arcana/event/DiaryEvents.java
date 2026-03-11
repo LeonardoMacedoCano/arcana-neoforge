@@ -22,6 +22,9 @@ public class DiaryEvents {
     private static final Map<UUID, Long> RITUAL_CHECK_COOLDOWN = new HashMap<>();
     private static final long RITUAL_CHECK_INTERVAL = 100L;
 
+    private static final Map<UUID, Long> PICKUP_CHECK_COOLDOWN = new HashMap<>();
+    private static final long PICKUP_CHECK_INTERVAL = 20L;
+
     @SubscribeEvent
     public static void onPlayerTick(PlayerTickEvent.Post event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
@@ -33,11 +36,15 @@ public class DiaryEvents {
             DiaryRitualGenerator.tryGenerateRitual(event);
         }
 
-        DiaryPersistenceHandler.preventExtraDiaryPickup(player);
+        if (currentTick - PICKUP_CHECK_COOLDOWN.getOrDefault(player.getUUID(), 0L) >= PICKUP_CHECK_INTERVAL) {
+            PICKUP_CHECK_COOLDOWN.put(player.getUUID(), currentTick);
+            DiaryPersistenceHandler.preventExtraDiaryPickup(player);
+        }
     }
 
     public static void clearState() {
         RITUAL_CHECK_COOLDOWN.clear();
+        PICKUP_CHECK_COOLDOWN.clear();
     }
 
     @SubscribeEvent

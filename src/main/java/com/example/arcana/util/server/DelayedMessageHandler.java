@@ -14,4 +14,8 @@ public class DelayedMessageHandler {
     public static void tick() {
         QUEUES.removeIf(DelayedMessageQueue::tick);
     }
+
+    public static void clear() {
+        QUEUES.clear();
+    }
 }

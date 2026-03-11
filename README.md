@@ -34,12 +34,48 @@ If another language is selected in Minecraft, `en_us` will be used as fallback.
 
 ## Technology
 
-- Minecraft **1.21.1**
-- **Java 21**
-- **NeoForge**
+| | |
+|---|---|
+| Minecraft | **1.21.1** |
+| NeoForge | **21.1.217** |
+| Java | **21** |
+| Gradle | **9.2.0** |
+| Mappings | Parchment 2024.11.17 |
+
+---
+
+## Current Content
+
+### Systems
+- **Ritual Generation** — A magic circle structure spawns near the player on their first time in Plains biome. A bound diary is placed inside the central chest.
+- **Bound Diary** — The diary is permanently linked to the player. If dropped or lost, it returns automatically. Cannot be duplicated.
+- **Dream System** — When the player wakes from sleeping, a dream may trigger. The first dream guides the player toward the diary's location.
+- **Delayed Narrative Messages** — Narrative messages are delivered over time, spaced out with ticks to create atmosphere.
+
+### Boss — The Fool
+- Summoned via the **Diorite Pedestal** ritual (requires Nether Star + Strange Totem + fire)
+- Flying boss with a custom model, animations, and boss bar (purple)
+- Combat phases: circling, windup, dash, melee, retreat, recover
+- Special mechanics: stun on shield block, rage shockwave, push attack, death sequence with dialogue
+- Drops: **Fool's Soul** item
+
+### Items
+- `Diary of Kaliastrus` — bound narrative item, opens a custom GUI with lore pages
+- `Strange Totem` — found in Desert Pyramid loot; required for the boss ritual
+- `Fool's Soul` — dropped by The Fool
+
+### Blocks
+- `Diorite Pedestal` — ritual activation block with custom hitbox and renderer
 
 ---
 
 ## Development Status
 
 Arcana is under active development. Features, systems, story content and balance are subject to change as the mod grows.
+
+### Known Roadmap Items
+- Rename package `com.example.arcana` to a unique identifier
+- Implement loot table JSON for The Fool (currently drops via code)
+- Implement or remove `USING_CUBIC_DOMAIN` / cubic domain attack
+- Add more dream types
+- Implement boss phases (e.g. activate cubic domain below 50% HP)

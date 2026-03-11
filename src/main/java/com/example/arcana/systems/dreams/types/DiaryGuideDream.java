@@ -29,7 +29,7 @@ public class DiaryGuideDream implements DreamType {
     @Override
     public boolean shouldTrigger(ServerPlayer player, ServerLevel level) {
         ArcanaLog.debug(MODULE, "Processing diary trigger condition for {}", player.getName().getString());
-        DiaryWorldData data = DiaryWorldData.get(level);
+        DiaryWorldData data = DiaryWorldData.get(player.serverLevel().getServer().overworld());
 
         if (!data.hasSpawned()) {
             ArcanaLog.debug(MODULE, "Diary structure has not spawned yet");
@@ -51,7 +51,7 @@ public class DiaryGuideDream implements DreamType {
         ArcanaLog.debug(MODULE, "Processing diary dream for {}", player.getName().getString());
         var msgs = DreamMessagesUtil.load(FILE, player);
 
-        BlockPos pos = DiaryWorldData.get(level).getStructurePos();
+        BlockPos pos = DiaryWorldData.get(player.serverLevel().getServer().overworld()).getStructurePos();
         String coords = "%d %d %d".formatted(pos.getX(), pos.getY(), pos.getZ());
 
         boolean first = !ORDER.containsKey(player.getUUID());

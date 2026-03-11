@@ -16,6 +16,11 @@ public class DreamManager {
         DREAMS.add(dream);
     }
 
+    public static void clear() {
+        DREAMS.clear();
+        ArcanaLog.debug(MODULE, "Dream registry cleared");
+    }
+
     public static void handleDreams(ServerPlayer player) {
         ServerLevel level = player.serverLevel();
 

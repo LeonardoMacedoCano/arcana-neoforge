@@ -504,7 +504,7 @@ public class TheFoolEntity extends Monster {
         if (random.nextFloat() < COUNTER_CHANCE) {
             Entity attacker = source.getDirectEntity();
             if (attacker instanceof LivingEntity le) {
-                le.knockback(1.8, this.getX() - le.getX(), this.getZ() - le.getZ());
+                le.knockback(1.0, this.getX() - le.getX(), this.getZ() - le.getZ());
             }
         }
 
@@ -528,8 +528,8 @@ public class TheFoolEntity extends Monster {
         if (!(level() instanceof ServerLevel sl)) return;
         sl.getEntitiesOfClass(Player.class, getBoundingBox().inflate(7))
                 .forEach(p -> {
-                    p.knockback(3.0, this.getX() - p.getX(), this.getZ() - p.getZ());
-                    p.setDeltaMovement(p.getDeltaMovement().add(0, 0.9, 0));
+                    p.knockback(1.4, this.getX() - p.getX(), this.getZ() - p.getZ());
+                    p.setDeltaMovement(p.getDeltaMovement().add(0, 0.3, 0));
                 });
         this.playSound(SoundEvents.WITHER_SHOOT, 1.2f, 0.6f);
     }
@@ -551,8 +551,8 @@ public class TheFoolEntity extends Monster {
         if (pushTarget != null) getLookControl().setLookAt(pushTarget, 30f, 30f);
         if (pushTicks == PUSH_HIT_TICK && pushTarget != null && pushTarget.isAlive()
                 && !pushTarget.isCreative() && !pushTarget.isSpectator()) {
-            pushTarget.knockback(2.8, this.getX() - pushTarget.getX(), this.getZ() - pushTarget.getZ());
-            pushTarget.setDeltaMovement(pushTarget.getDeltaMovement().add(0, 0.45, 0));
+            pushTarget.knockback(1.2, this.getX() - pushTarget.getX(), this.getZ() - pushTarget.getZ());
+            pushTarget.setDeltaMovement(pushTarget.getDeltaMovement().add(0, 0.15, 0));
             if (pushTarget instanceof ServerPlayer sp) {
                 sp.connection.send(new ClientboundSetEntityMotionPacket(pushTarget));
             }

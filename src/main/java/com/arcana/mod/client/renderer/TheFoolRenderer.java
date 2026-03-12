@@ -1,0 +1,37 @@
+package com.arcana.mod.client.renderer;
+
+import com.arcana.mod.ArcanaMod;
+import com.arcana.mod.client.model.TheFoolModel;
+import com.arcana.mod.content.entity.boss.TheFoolEntity;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.MobRenderer;
+import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
+
+public class TheFoolRenderer extends MobRenderer<TheFoolEntity, TheFoolModel> {
+
+    private static final float BOSS_SCALE = 1.2F;
+
+    private static final ResourceLocation TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(ArcanaMod.MODID, "textures/entity/the_fool.png");
+
+    public TheFoolRenderer(EntityRendererProvider.Context context) {
+        super(context, new TheFoolModel(context.bakeLayer(TheFoolModel.LAYER_LOCATION)), 0.8F);
+    }
+
+    @Override
+    public @NotNull ResourceLocation getTextureLocation(@NotNull TheFoolEntity entity) {
+        return TEXTURE;
+    }
+
+    @Override
+    protected void scale(@NotNull TheFoolEntity entity, @NotNull PoseStack poseStack, float partialTickTime) {
+        poseStack.scale(BOSS_SCALE, BOSS_SCALE, BOSS_SCALE);
+    }
+
+    @Override
+    protected float getFlipDegrees(@NotNull TheFoolEntity entity) {
+        return 0.0F;
+    }
+}

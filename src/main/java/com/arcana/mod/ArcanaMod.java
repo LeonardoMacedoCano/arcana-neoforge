@@ -23,7 +23,7 @@ public class ArcanaMod {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public ArcanaMod(IEventBus modEventBus, ModContainer modContainer) {
-        logStartup();
+        logStartup(modContainer.getModInfo().getVersion().toString());
         registerLifecycle(modEventBus);
         registerContent(modEventBus);
         registerForgeEvents();
@@ -68,9 +68,9 @@ public class ArcanaMod {
         logServerStarting();
     }
 
-    private void logStartup() {
+    private void logStartup(String version) {
         ArcanaLog.info("Core", "═══════════════════════════════════════");
-        ArcanaLog.info("Core", "Starting Arcana Mod v1.0");
+        ArcanaLog.info("Core", "Starting Arcana Mod v{}", version);
         ArcanaLog.info("Core", "Minecraft 1.21.1 - NeoForge");
         ArcanaLog.info("Core", "═══════════════════════════════════════");
     }

@@ -39,6 +39,7 @@ public class ArcanaMod {
     private void registerContent(IEventBus modEventBus) {
         ModBlocks.register(modEventBus);
         ModItems.register(modEventBus);
+        ModSounds.register(modEventBus);
         ModBlockEntities.BLOCK_ENTITIES.register(modEventBus);
         ModEntities.ENTITIES.register(modEventBus);
         ModCreativeTabs.register(modEventBus);

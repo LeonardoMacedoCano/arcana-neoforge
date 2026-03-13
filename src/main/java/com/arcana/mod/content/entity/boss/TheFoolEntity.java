@@ -29,6 +29,7 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
 import com.arcana.mod.registry.ModItems;
+import com.arcana.mod.registry.ModSounds;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.world.level.Level;
@@ -531,7 +532,7 @@ public class TheFoolEntity extends Monster {
                     p.knockback(1.4, this.getX() - p.getX(), this.getZ() - p.getZ());
                     p.setDeltaMovement(p.getDeltaMovement().add(0, 0.3, 0));
                 });
-        this.playSound(SoundEvents.WITHER_SHOOT, 1.2f, 0.6f);
+        this.playSound(ModSounds.THE_FOOL_SHOCKWAVE.get(), 1.2f, 0.6f);
     }
 
     private void checkPushTrigger() {
@@ -717,9 +718,9 @@ public class TheFoolEntity extends Monster {
 
     @Override public boolean causeFallDamage(float d, float m, @NotNull DamageSource s) { return false; }
     @Override public boolean startRiding(@NotNull Entity vehicle, boolean force)        { return false; }
-    @Override protected SoundEvent getAmbientSound()                                   { return SoundEvents.WITHER_AMBIENT; }
-    @Override protected @NotNull SoundEvent getHurtSound(@NotNull DamageSource s)      { return SoundEvents.WITHER_HURT; }
-    @Override protected @NotNull SoundEvent getDeathSound()                            { return SoundEvents.WITHER_DEATH; }
+    @Override protected SoundEvent getAmbientSound()                                   { return ModSounds.THE_FOOL_AMBIENT.get(); }
+    @Override protected @NotNull SoundEvent getHurtSound(@NotNull DamageSource s)      { return ModSounds.THE_FOOL_HURT.get(); }
+    @Override protected @NotNull SoundEvent getDeathSound()                            { return ModSounds.THE_FOOL_DEATH.get(); }
     @Override public    boolean canUsePortal(boolean d)                                { return false; }
 
     @Override

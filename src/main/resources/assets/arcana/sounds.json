@@ -1,0 +1,29 @@
+{
+  "the_fool.ambient": {
+    "sounds": [
+      {"name": "arcana:entity/the_fool/ambient_1", "volume": 0.7, "pitch": 0.85},
+      {"name": "arcana:entity/the_fool/ambient_2", "volume": 0.7, "pitch": 0.9},
+      {"name": "arcana:entity/the_fool/ambient_3", "volume": 0.65, "pitch": 0.8}
+    ],
+    "subtitle": "subtitles.arcana.the_fool.ambient"
+  },
+  "the_fool.hurt": {
+    "sounds": [
+      {"name": "arcana:entity/the_fool/hurt_1", "volume": 0.9, "pitch": 0.8},
+      {"name": "arcana:entity/the_fool/hurt_2", "volume": 0.85, "pitch": 0.75}
+    ],
+    "subtitle": "subtitles.arcana.the_fool.hurt"
+  },
+  "the_fool.death": {
+    "sounds": [
+      {"name": "arcana:entity/the_fool/death", "volume": 1.0, "pitch": 0.75}
+    ],
+    "subtitle": "subtitles.arcana.the_fool.death"
+  },
+  "the_fool.shockwave": {
+    "sounds": [
+      {"name": "arcana:entity/the_fool/shockwave", "volume": 1.0, "pitch": 0.7}
+    ],
+    "subtitle": "subtitles.arcana.the_fool.shockwave"
+  }
+}

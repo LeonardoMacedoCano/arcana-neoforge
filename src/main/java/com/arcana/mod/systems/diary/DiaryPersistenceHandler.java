@@ -13,6 +13,8 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.server.level.ServerLevel;
 import net.neoforged.neoforge.event.entity.item.ItemTossEvent;
+import net.neoforged.neoforge.common.util.TriState;
+import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerContainerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
@@ -238,18 +240,15 @@ public class DiaryPersistenceHandler {
         ArcanaLog.info(MODULE, "Static state cleared on server stop");
     }
 
-    public static void preventExtraDiaryPickup(ServerPlayer player) {
-        if (!playerHasDiary(player)) return;
+    public static void handleDiaryPickup(ItemEntityPickupEvent.Pre event) {
+        if (!(event.getPlayer() instanceof ServerPlayer player)) return;
+        ItemStack stack = event.getItemEntity().getItem();
+        if (!isDiary(stack)) return;
 
-        List<ItemEntity> nearby = player.level().getEntitiesOfClass(
-            ItemEntity.class,
-            player.getBoundingBox().inflate(1.5),
-            e -> isDiary(e.getItem())
-        );
-
-        for (ItemEntity entity : nearby) {
-            entity.setPickUpDelay(20);
-            ArcanaLog.playerDebug(MODULE, player, "Blocked picking up extra diary from ground");
+        if (isDiaryBondActive(player) && playerHasDiary(player)) {
+            event.setCanPickup(TriState.FALSE);
+            event.getItemEntity().discard();
+            ArcanaLog.playerDebug(MODULE, player, "Discarded extra diary - player already bonded and has diary");
         }
     }
 }

@@ -1,81 +1,72 @@
 # Arcana Mod
 
-Arcana is a mod for **Minecraft 1.21.1**, developed using **Java 21** and **NeoForge**.  
-This project is currently **in development**, and many systems, mechanics and story elements are actively evolving.
+A narrative and lore mod for **Minecraft 1.21.1** built with **NeoForge**. The theme is arcane occultism with tarot cards — the first boss is **The Fool**.
 
-Arcana is not simply about adding new content. It is about atmosphere, mystery, choice, and consequence.  
-If you open the book, you choose to deal with whatever comes after.
+> *"An ancient mage named Kaliastrus Novarcanus bound his legacy inside a cursed diary. If you open the book, you choose to deal with whatever comes after."*
 
 ---
 
-## Lore
+## What This Mod Does
 
-An ancient mage named **Kaliastrus Novarcanus** bound his legacy inside a cursed diary.  
-This book can be found inside special structures that appear on plains, close to the player.
+When a player first enters a Plains biome, a **magic ritual circle** generates nearby with a chest containing a **bound diary**. The diary is permanently linked to that player — if dropped or lost, it returns automatically and cannot be duplicated.
 
-Inside the diary, you will discover powerful rituals capable of summoning bosses in a fixed sequence.  
-Each boss must be defeated in order, because every ritual requires an item dropped by the previous one.
+Sleeping triggers a **dream sequence** that guides the player toward the ritual site. The diary contains lore pages written by Kaliastrus, and reading them reveals the rituals needed to summon the bosses.
 
-When each boss is summoned, it speaks to the player — taunting, warning, or mocking — right before the battle begins.  
-Defeating them grants permanent effects and powers, marking those who survive with traces of forbidden magic.
-
----
-
-## Language Support
-
-Arcana currently supports the following languages:
-
-- `en_us`
-- `pt_br`
-
-If another language is selected in Minecraft, `en_us` will be used as fallback.
-
----
-
-## Technology
-
-| | |
-|---|---|
-| Minecraft | **1.21.1** |
-| NeoForge | **21.1.217** |
-| Java | **21** |
-| Gradle | **9.2.0** |
-| Mappings | Parchment 2024.11.17 |
+Each boss is summoned via a **Diorite Pedestal** ritual and must be defeated in sequence, since each ritual requires an item dropped by the previous boss.
 
 ---
 
 ## Current Content
 
-### Systems
-- **Ritual Generation** — A magic circle structure spawns near the player on their first time in Plains biome. A bound diary is placed inside the central chest.
-- **Bound Diary** — The diary is permanently linked to the player. If dropped or lost, it returns automatically. Cannot be duplicated.
-- **Dream System** — When the player wakes from sleeping, a dream may trigger. The first dream guides the player toward the diary's location.
-- **Delayed Narrative Messages** — Narrative messages are delivered over time, spaced out with ticks to create atmosphere.
-
 ### Boss — The Fool
-- Summoned via the **Diorite Pedestal** ritual (requires Nether Star + Strange Totem + fire)
-- Flying boss with a custom model, animations, and boss bar (purple)
-- Combat phases: circling, windup, dash, melee, retreat, recover
-- Special mechanics: stun on shield block, rage shockwave, push attack, death sequence with dialogue
-- Drops: **Fool's Soul** item
+- Summoned at the **Diorite Pedestal** with a Nether Star + Strange Totem + fire source
+- Flying boss with a custom 3D model, animations, and a purple boss bar
+- Combat system: circling, windup, dash, melee, retreat, recover
+- Special mechanics: stun on shield block, rage shockwave, push attack
+- Speaks to the player during summon and at death
+- Drops: **Fool's Soul**
+
+### Systems
+| System | Description |
+|---|---|
+| Ritual Generation | Magic circle spawns in Plains on first login, with the diary in the central chest |
+| Bound Diary | Permanently linked to the player — auto-returns if lost, prevents duplicates |
+| Dream System | Dreams trigger on wake-up; the first one guides the player to the diary |
+| Narrative Messages | Messages are spaced over time using a tick-based queue for atmosphere |
+| Desert Pyramid Loot | Strange Totem has a 15% chance to appear in pyramid chests |
 
 ### Items
-- `Diary of Kaliastrus` — bound narrative item, opens a custom GUI with lore pages
-- `Strange Totem` — found in Desert Pyramid loot; required for the boss ritual
-- `Fool's Soul` — dropped by The Fool
+| Item | Description |
+|---|---|
+| Diary of Kaliastrus | Opens a custom GUI with lore pages; bound to one player |
+| Strange Totem | Found in Desert Pyramids; required for The Fool's ritual |
+| Fool's Soul | Dropped by The Fool |
 
 ### Blocks
-- `Diorite Pedestal` — ritual activation block with custom hitbox and renderer
+| Block | Description |
+|---|---|
+| Diorite Pedestal | Ritual activation block with custom hitbox and item renderer |
 
 ---
 
-## Development Status
+## Language Support
 
-Arcana is under active development. Features, systems, story content and balance are subject to change as the mod grows.
+Fully translated in `en_us` and `pt_br`. Falls back to `en_us` for any other language.
 
-### Known Roadmap Items
-- Rename package `com.example.arcana` to a unique identifier
-- Implement loot table JSON for The Fool (currently drops via code)
-- Implement or remove `USING_CUBIC_DOMAIN` / cubic domain attack
-- Add more dream types
-- Implement boss phases (e.g. activate cubic domain below 50% HP)
+---
+
+## Tech Stack
+
+| | |
+|---|---|
+| Minecraft | 1.21.1 |
+| NeoForge | 21.1.217 |
+| Java | 21 |
+| Gradle | 9.2.0 |
+| Mappings | Parchment 2024.11.17 |
+
+---
+
+## Authors
+
+**PSICOQUATO** and **LCano**

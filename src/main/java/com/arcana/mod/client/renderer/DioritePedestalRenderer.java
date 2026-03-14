@@ -33,8 +33,8 @@ public class DioritePedestalRenderer implements BlockEntityRenderer<DioritePedes
         }
         if (items.isEmpty()) return;
 
-        final float ITEM_Y     = 1.3f;
-        final float ITEM_SCALE = 0.22f;
+        final float ITEM_Y     = 1.13f;
+        final float ITEM_SCALE = 0.40f;
 
         for (int i = 0; i < items.size(); i++) {
             pose.pushPose();
@@ -61,7 +61,7 @@ public class DioritePedestalRenderer implements BlockEntityRenderer<DioritePedes
     }
 
     private float computeOffset(int index, int totalItems) {
-        final float SPACING    = 0.28f;
+        final float SPACING    = 0.45f;
         if (totalItems == 1) return 0;
         float start = -((totalItems - 1) * SPACING) / 2f;
         return start + index * SPACING;

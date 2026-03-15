@@ -35,5 +35,10 @@
   "advancement.arcana.defeat_the_fool.title": "The Fool Has Fallen",
   "advancement.arcana.defeat_the_fool.description": "Defeat The Fool for the first time.",
 
-  "gui.arcana.diary.title": "Diary of Kaliastrus"
+  "gui.arcana.diary.title": "Diary of Kaliastrus",
+
+  "subtitles.arcana.the_fool.ambient": "The Fool murmurs",
+  "subtitles.arcana.the_fool.hurt": "The Fool recoils",
+  "subtitles.arcana.the_fool.death": "The Fool falls",
+  "subtitles.arcana.the_fool.shockwave": "The Fool repels"
 }

@@ -537,7 +537,8 @@ public class TheFoolEntity extends Monster {
                     p.knockback(1.4, this.getX() - p.getX(), this.getZ() - p.getZ());
                     p.setDeltaMovement(p.getDeltaMovement().add(0, 0.3, 0));
                 });
-        this.playSound(ModSounds.THE_FOOL_SHOCKWAVE.get(), 1.2f, 0.6f);
+        sl.playSound(null, this.getX(), this.getY(), this.getZ(),
+                ModSounds.THE_FOOL_SHOCKWAVE.get(), this.getSoundSource(), 1.2f, 0.6f);
     }
 
     private void checkPushTrigger() {
@@ -562,6 +563,10 @@ public class TheFoolEntity extends Monster {
             pushTarget.setDeltaMovement(pushTarget.getDeltaMovement().add(0, 0.15, 0));
             if (pushTarget instanceof ServerPlayer sp) {
                 sp.connection.send(new ClientboundSetEntityMotionPacket(pushTarget));
+            }
+            if (level() instanceof ServerLevel sl) {
+                sl.playSound(null, this.getX(), this.getY(), this.getZ(),
+                        ModSounds.THE_FOOL_SHOCKWAVE.get(), this.getSoundSource(), 1.2f, 0.8f);
             }
         }
         if (pushTicks <= 0) {

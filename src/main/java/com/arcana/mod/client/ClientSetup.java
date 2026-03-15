@@ -1,6 +1,5 @@
 package com.arcana.mod.client;
 
-import com.arcana.mod.ArcanaMod;
 import com.arcana.mod.client.gui.DiaryScreen;
 import com.arcana.mod.client.model.TheFoolModel;
 import com.arcana.mod.client.renderer.DioritePedestalRenderer;
@@ -10,18 +9,13 @@ import com.arcana.mod.registry.ModBlockEntities;
 import com.arcana.mod.registry.ModEntities;
 import com.arcana.mod.util.common.ArcanaLog;
 import net.minecraft.client.Minecraft;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 
-@EventBusSubscriber(modid = ArcanaMod.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public class ClientSetup {
 
     private static final String MODULE = "CLIENT";
 
-    @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
         ArcanaLog.info(MODULE, "Client setup starting");
         ArcanaLog.info(MODULE, "Welcome, {}", Minecraft.getInstance().getUser().getName());
@@ -31,7 +25,6 @@ public class ClientSetup {
         ArcanaLog.debug(MODULE, "Client setup finished");
     }
 
-    @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         ArcanaLog.info(MODULE, "Registering block entity renderers");
 
@@ -49,7 +42,6 @@ public class ClientSetup {
         ArcanaLog.debug(MODULE, "All renderers registered");
     }
 
-    @SubscribeEvent
     public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
         ArcanaLog.info(MODULE, "Registering model layers");
 

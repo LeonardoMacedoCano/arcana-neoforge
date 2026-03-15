@@ -12,6 +12,8 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.event.entity.item.ItemTossEvent;
 import net.neoforged.neoforge.common.util.TriState;
 import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
@@ -25,7 +27,6 @@ public class DiaryPersistenceHandler {
     private static final String MODULE = "DIARY";
     private static final String PLAYER_BOUND_KEY = "arcana.diary_bound";
     private static final Map<UUID, Deque<Integer>> PLAYER_MESSAGE_ORDER = new HashMap<>();
-    private static final Random RANDOM = new Random();
     private static final Map<UUID, Long> SCHEDULED_RETURNS = new HashMap<>();
     private static final int RETURN_DELAY_TICKS = 100;
     private static final Map<UUID, TrackedDrop> TRACKED_DROPS = new HashMap<>();
@@ -33,7 +34,7 @@ public class DiaryPersistenceHandler {
     private static int bondCheckTick = 0;
     private static final int BOND_CHECK_INTERVAL = 40;
 
-    private record TrackedDrop(UUID owner, UUID entityUuid, long expireTick) {}
+    private record TrackedDrop(UUID owner, UUID entityUuid, long expireTick, ResourceKey<Level> dimensionKey) {}
 
     public static void handleItemToss(ItemTossEvent event) {
         if (!(event.getPlayer() instanceof ServerPlayer player)) return;
@@ -43,7 +44,8 @@ public class DiaryPersistenceHandler {
         if (!isDiary(stack)) return;
 
         long expireTick = player.serverLevel().getServer().getTickCount() + RETURN_DELAY_TICKS;
-        TRACKED_DROPS.put(entity.getUUID(), new TrackedDrop(player.getUUID(), entity.getUUID(), expireTick));
+        ResourceKey<Level> dim = player.serverLevel().dimension();
+        TRACKED_DROPS.put(entity.getUUID(), new TrackedDrop(player.getUUID(), entity.getUUID(), expireTick, dim));
         ArcanaLog.playerDebug(MODULE, player, "Diary tossed and registered for tracking");
     }
 
@@ -61,13 +63,16 @@ public class DiaryPersistenceHandler {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         if (!isDiaryBondActive(player)) return;
 
-        event.getContainer().slots.forEach(slot -> {
-            if (slot.hasItem() && isDiary(slot.getItem()) && !(slot.container instanceof Inventory)) {
-                slot.set(ItemStack.EMPTY);
-                slot.setChanged();
-                ensureDiaryReturnScheduled(player);
-                ArcanaLog.playerDebug(MODULE, player, "Diary removed from external container and scheduled to return");
-            }
+        var slots = event.getContainer().slots;
+        player.serverLevel().getServer().execute(() -> {
+            slots.forEach(slot -> {
+                if (slot.hasItem() && isDiary(slot.getItem()) && !(slot.container instanceof Inventory)) {
+                    slot.set(ItemStack.EMPTY);
+                    slot.setChanged();
+                    ensureDiaryReturnScheduled(player);
+                    ArcanaLog.playerDebug(MODULE, player, "Diary removed from external container and scheduled to return");
+                }
+            });
         });
     }
 
@@ -87,11 +92,11 @@ public class DiaryPersistenceHandler {
     private static void processTrackedDrops(ServerTickEvent.Post event, long tick) {
         TRACKED_DROPS.values().removeIf(drop -> {
             ItemEntity entity = null;
-            for (ServerLevel level : event.getServer().getAllLevels()) {
+            ServerLevel level = event.getServer().getLevel(drop.dimensionKey());
+            if (level != null) {
                 var found = level.getEntity(drop.entityUuid());
                 if (found instanceof ItemEntity ie) {
                     entity = ie;
-                    break;
                 }
             }
 
@@ -186,7 +191,6 @@ public class DiaryPersistenceHandler {
     private static boolean playerHasDiary(ServerPlayer player) {
         return player.getInventory().items.stream().anyMatch(DiaryPersistenceHandler::isDiary)
                 || isDiary(player.getOffhandItem())
-                || isDiary(player.getMainHandItem())
                 || cursorHasDiary(player);
     }
 
@@ -216,10 +220,7 @@ public class DiaryPersistenceHandler {
     }
 
     private static Deque<Integer> generateMessageOrder(int size) {
-        List<Integer> list = new ArrayList<>();
-        for (int i = 0; i < size; i++) list.add(i);
-        Collections.shuffle(list, RANDOM);
-        return new ArrayDeque<>(list);
+        return new ArrayDeque<>(com.arcana.mod.systems.dreams.DreamMessagesUtil.shuffledIndices(size));
     }
 
     private static void ensureDiaryReturnScheduled(ServerPlayer player) {

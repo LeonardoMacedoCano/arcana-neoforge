@@ -85,6 +85,6 @@ public class DiaryContent {
     }
 
     public static String getTitle() {
-        return "Diary of Kaliastrus";
+        return net.minecraft.network.chat.Component.translatable("gui.arcana.diary.title").getString();
     }
 }

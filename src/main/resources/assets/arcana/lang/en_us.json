@@ -33,5 +33,7 @@
   "advancement.arcana.first_strange_totem.description": "You received the first strange totem.",
 
   "advancement.arcana.defeat_the_fool.title": "The Fool Has Fallen",
-  "advancement.arcana.defeat_the_fool.description": "Defeat The Fool for the first time."
+  "advancement.arcana.defeat_the_fool.description": "Defeat The Fool for the first time.",
+
+  "gui.arcana.diary.title": "Diary of Kaliastrus"
 }

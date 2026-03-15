@@ -19,7 +19,6 @@ public class DiaryGuideDream implements DreamType {
     private static final String FILE = "diary_guide_dream";
 
     private static final Map<UUID, List<Integer>> ORDER = new HashMap<>();
-    private static final Random RNG = new Random();
 
     @Override
     public String getName() {
@@ -59,10 +58,10 @@ public class DiaryGuideDream implements DreamType {
 
         if (first) {
             msg = msgs.first().formatted(coords);
-            ORDER.put(player.getUUID(), shuffled(msgs.rest().size()));
+            ORDER.put(player.getUUID(), new ArrayList<>(DreamMessagesUtil.shuffledIndices(msgs.rest().size())));
         } else {
             List<Integer> order = ORDER.get(player.getUUID());
-            if (order.isEmpty()) order.addAll(shuffled(msgs.rest().size()));
+            if (order.isEmpty()) order.addAll(DreamMessagesUtil.shuffledIndices(msgs.rest().size()));
 
             msg = msgs.rest().get(order.removeFirst()).formatted(coords);
         }
@@ -79,10 +78,4 @@ public class DiaryGuideDream implements DreamType {
         ORDER.clear();
     }
 
-    private List<Integer> shuffled(int size) {
-        List<Integer> list = new ArrayList<>();
-        for (int i = 0; i < size; i++) list.add(i);
-        Collections.shuffle(list, RNG);
-        return list;
-    }
 }

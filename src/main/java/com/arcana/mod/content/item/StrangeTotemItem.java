@@ -5,6 +5,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.TooltipFlag;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.api.distmarker.Dist;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -20,37 +22,27 @@ public class StrangeTotemItem extends Item {
                                 @NotNull TooltipContext context,
                                 @NotNull List<Component> tooltip,
                                 @NotNull TooltipFlag flag) {
+        if (FMLEnvironment.dist != Dist.CLIENT) return;
 
-        tooltip.add(Component.literal(
-                        caesarShift(Component.translatable("item.arcana.strange_totem.tooltip.line1").getString()))
-                .withStyle(style -> style
-                        .withItalic(true)
-                        .withFont(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("minecraft", "uniform"))
-                        .withColor(0xC2A157)
-                )
-        );
-
-        tooltip.add(Component.literal(
-                        caesarShift(Component.translatable("item.arcana.strange_totem.tooltip.line2").getString()))
-                .withStyle(style -> style
-                        .withItalic(true)
-                        .withFont(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("minecraft", "uniform"))
-                        .withColor(0xB89445)
-                )
-        );
-
-        tooltip.add(Component.literal(
-                        caesarShift(Component.translatable("item.arcana.strange_totem.tooltip.line3").getString()))
-                .withStyle(style -> style
-                        .withItalic(true)
-                        .withFont(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("minecraft", "uniform"))
-                        .withColor(0xA67C2C)
-                )
-        );
+        tooltip.add(styledLine(
+                caesarShift(Component.translatable("item.arcana.strange_totem.tooltip.line1").getString()),
+                0xC2A157));
+        tooltip.add(styledLine(
+                caesarShift(Component.translatable("item.arcana.strange_totem.tooltip.line2").getString()),
+                0xB89445));
+        tooltip.add(styledLine(
+                caesarShift(Component.translatable("item.arcana.strange_totem.tooltip.line3").getString()),
+                0xA67C2C));
 
         super.appendHoverText(stack, context, tooltip, flag);
     }
 
+    private static Component styledLine(String text, int color) {
+        return Component.literal(text).withStyle(style -> style
+                .withItalic(true)
+                .withFont(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("minecraft", "uniform"))
+                .withColor(color));
+    }
 
     private String caesarShift(String text) {
         StringBuilder s = new StringBuilder();

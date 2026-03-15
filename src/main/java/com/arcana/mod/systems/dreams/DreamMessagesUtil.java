@@ -1,65 +1,47 @@
 package com.arcana.mod.systems.dreams;
 
-import com.arcana.mod.ArcanaMod;
 import com.arcana.mod.util.common.ArcanaLog;
-import com.arcana.mod.util.common.LanguageUtil;
-import com.arcana.mod.util.server.ServerResourceLoader;
-import com.google.gson.JsonArray;
-import net.minecraft.resources.ResourceLocation;
+import com.arcana.mod.util.server.NarrativeResourceLoader;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class DreamMessagesUtil {
 
+    private static final String MODULE = "DREAMS";
+
     public static DreamMessages load(String dreamFileName, ServerPlayer player) {
-        String playerLang = ServerResourceLoader.getPlayerLanguage(player);
-        String validatedLang = LanguageUtil.validate(playerLang);
-
-        ResourceLocation path = ResourceLocation.fromNamespaceAndPath(
-                ArcanaMod.MODID,
-                "narrative/dreams/" + dreamFileName + "_" + validatedLang + ".json"
-        );
-
-        var server = player.getServer();
-        var jsonOpt = ServerResourceLoader.loadJson(server, path, "Dreams");
-
-        if (jsonOpt.isEmpty() ||
-                !jsonOpt.get().has("first") ||
-                !jsonOpt.get().has("messages")) {
-
-            ArcanaLog.warn("Dreams",
-                    "Invalid dream json {} ({})",
-                    dreamFileName, validatedLang
-            );
-
+        var jsonOpt = NarrativeResourceLoader.loadObject(player, "dreams/" + dreamFileName);
+        if (jsonOpt.isEmpty() || !jsonOpt.get().has("first") || !jsonOpt.get().has("messages")) {
+            ArcanaLog.warn(MODULE, "Invalid dream json {} — missing 'first' or 'messages' field", dreamFileName);
             return error();
         }
 
         var json = jsonOpt.get();
-
         String first = json.get("first").getAsString();
-        JsonArray arr = json.getAsJsonArray("messages");
+        var arr = json.getAsJsonArray("messages");
 
         List<String> msgs = new ArrayList<>();
-        for (int i = 0; i < arr.size(); i++) {
-            msgs.add(arr.get(i).getAsString());
-        }
+        for (int i = 0; i < arr.size(); i++) msgs.add(arr.get(i).getAsString());
 
-        ArcanaLog.info("Dreams",
-                "Loaded {} dream messages for {} ({})",
-                msgs.size(), dreamFileName, validatedLang
-        );
-
+        ArcanaLog.info(MODULE, "Loaded {} dream messages for {}", msgs.size(), dreamFileName);
         return new DreamMessages(first, msgs);
     }
 
     private static DreamMessages error() {
         return new DreamMessages(
-                "Dream messages failed to load: " + "Invalid dream structure",
+                "Dream messages failed to load: Invalid dream structure",
                 List.of("Dream system error. Check logs.")
         );
+    }
+
+    public static List<Integer> shuffledIndices(int count) {
+        List<Integer> list = new ArrayList<>();
+        for (int i = 0; i < count; i++) list.add(i);
+        Collections.shuffle(list);
+        return list;
     }
 
     public record DreamMessages(String first, List<String> rest) {}

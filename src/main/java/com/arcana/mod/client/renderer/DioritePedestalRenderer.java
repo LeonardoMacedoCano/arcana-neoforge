@@ -67,8 +67,4 @@ public class DioritePedestalRenderer implements BlockEntityRenderer<DioritePedes
         return start + index * SPACING;
     }
 
-    @Override
-    public boolean shouldRenderOffScreen(@NotNull DioritePedestalBlockEntity be) {
-        return true;
-    }
 }

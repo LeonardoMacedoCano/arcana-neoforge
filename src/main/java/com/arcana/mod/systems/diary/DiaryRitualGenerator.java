@@ -131,12 +131,19 @@ public class DiaryRitualGenerator {
         return true;
     }
 
+    private static final int MAX_CANDIDATES = 200;
+
     private static BlockPos findValidPlainsSpot(ServerLevel level, BlockPos origin) {
         ArcanaLog.debug(MODULE, "Searching ritual terrain...");
 
+        int checked = 0;
         for (int r = SEARCH_STEP; r <= SEARCH_RADIUS; r += SEARCH_STEP)
             for (int x = -r; x <= r; x += SEARCH_STEP)
                 for (int z = -r; z <= r; z += SEARCH_STEP) {
+                    if (checked++ >= MAX_CANDIDATES) {
+                        ArcanaLog.debug(MODULE, "Reached candidate limit, aborting search this tick");
+                        return null;
+                    }
                     BlockPos candidate = origin.offset(x, 0, z);
                     if (isGoodSpot(level, candidate)) {
                         ArcanaLog.debug(MODULE, "Valid spot found at {}", candidate);
@@ -190,7 +197,7 @@ public class DiaryRitualGenerator {
                 for (int y = 0; y <= 25; y++) {
                     BlockPos p = chestPos.offset(x, y, z);
                     if (!level.isEmptyBlock(p))
-                        level.setBlockAndUpdate(p, Blocks.AIR.defaultBlockState());
+                        level.setBlock(p, Blocks.AIR.defaultBlockState(), 2);
                 }
     }
 

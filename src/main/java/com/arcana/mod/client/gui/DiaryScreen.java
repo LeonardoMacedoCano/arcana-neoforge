@@ -219,7 +219,7 @@ public class DiaryScreen extends Screen {
 
     @Override
     public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        renderBackgroundBlur(graphics);
+        renderDarkOverlay(graphics);
         renderDiaryBackground(graphics);
         if (pageAlpha < 1.0F) pageAlpha = Math.min(1.0F, pageAlpha + FADE_SPEED);
         if (isContentPage()) {
@@ -229,7 +229,7 @@ public class DiaryScreen extends Screen {
         super.render(graphics, mouseX, mouseY, partialTicks);
     }
 
-    private void renderBackgroundBlur(GuiGraphics graphics) {
+    private void renderDarkOverlay(GuiGraphics graphics) {
         graphics.fill(0, 0, this.width, this.height, 0xA0000000);
     }
 
@@ -238,6 +238,11 @@ public class DiaryScreen extends Screen {
         int cx = (this.width - 256) / 2;
         int cy = (this.height - 256) / 2;
         graphics.blit(bg, cx, cy, 0, 0, 256, 256, 256, 256);
+    }
+
+    private int applyAlpha(int color) {
+        int alpha = (int)(pageAlpha * 255) & 0xFF;
+        return (alpha << 24) | (color & 0x00FFFFFF);
     }
 
     private void renderPageContent(GuiGraphics graphics) {
@@ -257,7 +262,7 @@ public class DiaryScreen extends Screen {
                 int x = baseX;
                 for (InlineRun run : line.runs()) {
                     if (run instanceof TextRun(FormattedCharSequence seq, int pixelWidth)) {
-                        graphics.drawString(this.font, seq, x, y, TEXT_COLOR, false);
+                        graphics.drawString(this.font, seq, x, y, applyAlpha(TEXT_COLOR), false);
                         x += pixelWidth;
                     }
                 }
@@ -295,7 +300,7 @@ public class DiaryScreen extends Screen {
     private void renderPageNumber(GuiGraphics graphics) {
         String text = currentPage + " / " + (totalPages - 2);
         int w = this.font.width(text);
-        graphics.drawString(this.font, text, leftPos + (TEXTURE_WIDTH - w) / 2, topPos + TEXTURE_HEIGHT - TEXT_MARGIN, PAGE_NUMBER_COLOR, false);
+        graphics.drawString(this.font, text, leftPos + (TEXTURE_WIDTH - w) / 2, topPos + TEXTURE_HEIGHT - TEXT_MARGIN, applyAlpha(PAGE_NUMBER_COLOR), false);
     }
 
     @Override

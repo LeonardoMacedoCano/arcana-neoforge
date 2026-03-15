@@ -1,13 +1,9 @@
 package com.arcana.mod.systems.diary;
 
-import com.arcana.mod.ArcanaMod;
 import com.arcana.mod.util.common.ArcanaLog;
-import com.arcana.mod.util.common.LanguageUtil;
-import com.arcana.mod.util.server.ServerResourceLoader;
-import com.google.gson.JsonArray;
+import com.arcana.mod.util.server.NarrativeResourceLoader;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.ArrayList;
@@ -15,45 +11,20 @@ import java.util.List;
 
 public class DiaryMessageLoader {
 
+    private static final String MODULE = "DIARY";
+
     public static List<Component> getMessages(ServerPlayer player) {
-        String playerLang = ServerResourceLoader.getPlayerLanguage(player);
-        String validatedLang = LanguageUtil.validate(playerLang);
+        var arrOpt = NarrativeResourceLoader.loadArray(player, "diary/diary_messages", "messages");
+        if (arrOpt.isEmpty()) return fallback();
 
-        ResourceLocation path = ResourceLocation.fromNamespaceAndPath(
-                ArcanaMod.MODID,
-                "narrative/diary/diary_messages_" + validatedLang + ".json"
-        );
-        var server = player.getServer();
-        var jsonOpt = ServerResourceLoader.loadJson(server, path, "Diary");
-
-        if (jsonOpt.isEmpty() || !jsonOpt.get().has("messages")) {
-            ArcanaLog.error("Diary",
-                    "Invalid or missing diary messages JSON structure {}", path);
-            return fallback();
-        }
-
-        JsonArray arr = jsonOpt.get().getAsJsonArray("messages");
+        var arr = arrOpt.get();
         List<Component> list = new ArrayList<>();
-
         for (int i = 0; i < arr.size(); i++) {
-            String text = arr.get(i).getAsString();
-
-            list.add(
-                    Component.literal(text)
-                            .withStyle((i % 2 == 0)
-                                    ? ChatFormatting.LIGHT_PURPLE
-                                    : ChatFormatting.DARK_PURPLE
-                            )
-            );
+            list.add(Component.literal(arr.get(i).getAsString())
+                    .withStyle(i % 2 == 0 ? ChatFormatting.LIGHT_PURPLE : ChatFormatting.DARK_PURPLE));
         }
 
-        ArcanaLog.info(
-                "Diary",
-                "Loaded {} diary messages ({})",
-                list.size(),
-                validatedLang
-        );
-
+        ArcanaLog.info(MODULE, "Loaded {} diary messages", list.size());
         return list;
     }
 

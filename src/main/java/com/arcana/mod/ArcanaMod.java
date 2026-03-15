@@ -1,26 +1,26 @@
 package com.arcana.mod;
 
+import com.arcana.mod.client.ClientSetup;
 import com.arcana.mod.content.entity.boss.TheFoolEntity;
 import com.arcana.mod.datagen.ArcanaDataGenerators;
 import com.arcana.mod.registry.*;
 import com.arcana.mod.systems.dreams.DreamRegistry;
 import com.arcana.mod.util.common.ArcanaLog;
-import com.mojang.logging.LogUtils;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
-import org.slf4j.Logger;
 
 @Mod(ArcanaMod.MODID)
 public class ArcanaMod {
 
     public static final String MODID = "arcana";
-    public static final Logger LOGGER = LogUtils.getLogger();
 
     public ArcanaMod(IEventBus modEventBus, ModContainer modContainer) {
         logStartup(modContainer.getModInfo().getVersion().toString());
@@ -34,14 +34,19 @@ public class ArcanaMod {
         modEventBus.addListener(this::onCommonSetup);
         modEventBus.addListener(this::onRegisterEntityAttributes);
         modEventBus.addListener(ArcanaDataGenerators::onGatherData);
+        if (FMLEnvironment.dist == Dist.CLIENT) {
+            modEventBus.addListener(ClientSetup::onClientSetup);
+            modEventBus.addListener(ClientSetup::registerRenderers);
+            modEventBus.addListener(ClientSetup::registerLayerDefinitions);
+        }
     }
 
     private void registerContent(IEventBus modEventBus) {
         ModBlocks.register(modEventBus);
         ModItems.register(modEventBus);
         ModSounds.register(modEventBus);
-        ModBlockEntities.BLOCK_ENTITIES.register(modEventBus);
-        ModEntities.ENTITIES.register(modEventBus);
+        ModBlockEntities.register(modEventBus);
+        ModEntities.register(modEventBus);
         ModCreativeTabs.register(modEventBus);
     }
 

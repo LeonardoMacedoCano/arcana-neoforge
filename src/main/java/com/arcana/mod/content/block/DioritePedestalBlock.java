@@ -27,6 +27,7 @@ import org.jetbrains.annotations.NotNull;
 public class DioritePedestalBlock extends BaseEntityBlock {
 
     public static final MapCodec<DioritePedestalBlock> CODEC = simpleCodec(DioritePedestalBlock::new);
+    private static final VoxelShape SHAPE = Block.box(2, 0, 2, 14, 16, 14);
 
     public DioritePedestalBlock(Properties props) {
         super(props);
@@ -44,12 +45,12 @@ public class DioritePedestalBlock extends BaseEntityBlock {
 
     @Override
     public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
-        return Block.box(2, 0, 2, 14, 16, 14);
+        return SHAPE;
     }
 
     @Override
     public @NotNull VoxelShape getCollisionShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
-        return getShape(state, level, pos, context);
+        return SHAPE;
     }
 
     @Override

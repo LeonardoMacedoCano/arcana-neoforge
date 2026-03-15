@@ -34,5 +34,6 @@ public class CommonEvents {
         DiaryGuideDream.clearState();
         DiaryEvents.clearState();
         DelayedMessageHandler.clear();
+        DreamManager.clear();
     }
 }

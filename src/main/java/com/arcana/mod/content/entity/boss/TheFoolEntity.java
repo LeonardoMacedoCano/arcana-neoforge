@@ -38,6 +38,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumSet;
+import java.util.UUID;
 
 public class TheFoolEntity extends Monster {
 
@@ -92,7 +93,7 @@ public class TheFoolEntity extends Monster {
     private int     introTicks       = 0;
     private boolean introCompleted   = false;
     private int     stunTicks        = 0;
-    private Player dashingToward    = null;
+    private UUID   dashingTowardUuid = null;
     private Vec3   dashDirection    = null;
     private double dashSpeed        = 1.2;
     private boolean waitingForDeath  = false;
@@ -102,7 +103,7 @@ public class TheFoolEntity extends Monster {
     private int    shockwaveCooldown = 0;
     private int    pushTicks         = 0;
     private int    pushCooldown      = 0;
-    private Player pushTarget        = null;
+    private UUID   pushTargetUuid    = null;
 
     public TheFoolEntity(EntityType<? extends Monster> type, Level level) {
         super(type, level);
@@ -178,7 +179,7 @@ public class TheFoolEntity extends Monster {
         @Override
         public void start() {
             target      = (Player) getTarget();
-            assert target != null;
+            if (target == null) return;
             circleAngle = Math.atan2(getZ() - target.getZ(), getX() - target.getX());
             circleDir   = random.nextBoolean() ? 1 : -1;
             evaluateState();
@@ -225,10 +226,10 @@ public class TheFoolEntity extends Monster {
         }
 
         private void startWindup(double dist) {
-            dashType      = (dist > MEDIUM_DIST) ? DashType.SUPER : DashType.NORMAL;
-            dashSpeed     = (dashType == DashType.SUPER) ? SUPER_DASH_SPEED : NORMAL_DASH_SPEED;
-            dashingToward = target;
-            dashDirection = null;
+            dashType          = (dist > MEDIUM_DIST) ? DashType.SUPER : DashType.NORMAL;
+            dashSpeed         = (dashType == DashType.SUPER) ? SUPER_DASH_SPEED : NORMAL_DASH_SPEED;
+            dashingTowardUuid = target.getUUID();
+            dashDirection     = null;
             enterPhase(Phase.WINDUP);
             entityData.set(IS_WINDING_UP, true);
         }
@@ -290,7 +291,7 @@ public class TheFoolEntity extends Monster {
 
             if (phaseTimer < WINDUP_CANCEL_TICKS && target.isBlocking()) {
                 entityData.set(IS_WINDING_UP, false);
-                dashingToward = null;
+                dashingTowardUuid = null;
                 dashDirection = null;
                 enterPhase(Phase.CIRCLING);
                 return;
@@ -298,8 +299,9 @@ public class TheFoolEntity extends Monster {
 
             if (phaseTimer >= WINDUP_TICKS) {
                 entityData.set(IS_WINDING_UP, false);
-                if (dashingToward != null && dashingToward.isAlive()) {
-                    Vec3 toTarget = dashingToward.position().add(0, 1.0, 0).subtract(position());
+                Player dashTarget = dashingTowardUuid != null ? level().getPlayerByUUID(dashingTowardUuid) : null;
+                if (dashTarget != null && dashTarget.isAlive()) {
+                    Vec3 toTarget = dashTarget.position().add(0, 1.0, 0).subtract(position());
                     dashDirection = toTarget.lengthSqr() > 1e-6 ? toTarget.normalize() : Vec3.ZERO;
                 }
                 entityData.set(IS_CHARGING, true);
@@ -318,7 +320,7 @@ public class TheFoolEntity extends Monster {
         }
 
         private void endDash() {
-            dashingToward = null;
+            dashingTowardUuid = null;
             entityData.set(IS_CHARGING, false);
             enterPhase(Phase.RECOVERING);
         }
@@ -330,9 +332,9 @@ public class TheFoolEntity extends Monster {
 
         @Override
         public void stop() {
-            cooldown      = FULL_COOLDOWN;
-            dashingToward = null;
-            dashDirection = null;
+            cooldown          = FULL_COOLDOWN;
+            dashingTowardUuid = null;
+            dashDirection     = null;
             entityData.set(IS_CHARGING, false);
             entityData.set(IS_WINDING_UP, false);
             target     = null;
@@ -343,7 +345,9 @@ public class TheFoolEntity extends Monster {
 
     @Override
     protected void customServerAiStep() {
-        if (level().isClientSide || dashingToward == null || !dashingToward.isAlive()) return;
+        if (level().isClientSide || dashingTowardUuid == null) return;
+        Player dashingToward = level().getPlayerByUUID(dashingTowardUuid);
+        if (dashingToward == null || !dashingToward.isAlive()) return;
 
         if (isWindingUp()) {
             double targetY = dashingToward.getY() + 2.0;
@@ -399,9 +403,7 @@ public class TheFoolEntity extends Monster {
     public void tick() {
         if (waitingForDeath && !level().isClientSide) {
             deathHoldTicks++;
-            if (deathHoldTicks < DEATH_EXTEND_TICKS) {
-                deathTime = 0;
-            } else if (deathHoldTicks >= DEATH_EXTEND_TICKS + 20) {
+            if (deathHoldTicks >= DEATH_EXTEND_TICKS + 20) {
                 this.discard();
                 return;
             }
@@ -415,6 +417,9 @@ public class TheFoolEntity extends Monster {
             }
         }
         super.tick();
+        if (waitingForDeath && !level().isClientSide && deathHoldTicks < DEATH_EXTEND_TICKS) {
+            deathTime = 0;
+        }
         if (this.level().isClientSide) {
             updateClientAnimations();
         } else {
@@ -512,8 +517,8 @@ public class TheFoolEntity extends Monster {
         if (recentHitCount >= 2 && pushTicks == 0 && pushCooldown == 0) {
             Entity attacker = source.getDirectEntity();
             if (attacker instanceof Player player && !player.isCreative() && !player.isSpectator()) {
-                pushTicks  = PUSH_DURATION;
-                pushTarget = player;
+                pushTicks        = PUSH_DURATION;
+                pushTargetUuid   = player.getUUID();
                 this.entityData.set(IS_PUSHING, true);
             }
         }
@@ -539,8 +544,8 @@ public class TheFoolEntity extends Monster {
         if (!(level() instanceof ServerLevel sl)) return;
         for (Player p : sl.players()) {
             if (p.isAlive() && !p.isSpectator() && !p.isCreative() && this.distanceTo(p) < PUSH_RANGE) {
-                pushTicks  = PUSH_DURATION;
-                pushTarget = p;
+                pushTicks      = PUSH_DURATION;
+                pushTargetUuid = p.getUUID();
                 this.entityData.set(IS_PUSHING, true);
                 return;
             }
@@ -549,6 +554,7 @@ public class TheFoolEntity extends Monster {
 
     private void tickPush() {
         pushTicks--;
+        Player pushTarget = pushTargetUuid != null ? level().getPlayerByUUID(pushTargetUuid) : null;
         if (pushTarget != null) getLookControl().setLookAt(pushTarget, 30f, 30f);
         if (pushTicks == PUSH_HIT_TICK && pushTarget != null && pushTarget.isAlive()
                 && !pushTarget.isCreative() && !pushTarget.isSpectator()) {
@@ -560,8 +566,8 @@ public class TheFoolEntity extends Monster {
         }
         if (pushTicks <= 0) {
             this.entityData.set(IS_PUSHING, false);
-            pushTarget   = null;
-            pushCooldown = PUSH_COOLDOWN_MAX;
+            pushTargetUuid = null;
+            pushCooldown   = PUSH_COOLDOWN_MAX;
         }
     }
 
@@ -597,10 +603,10 @@ public class TheFoolEntity extends Monster {
         stunTicks = STUN_DURATION;
         this.entityData.set(IS_STUNNED, true);
         this.setDeltaMovement(0, 0, 0);
-        dashingToward = null;
-        dashDirection = null;
-        pushTarget    = null;
-        pushTicks     = 0;
+        dashingTowardUuid = null;
+        dashDirection     = null;
+        pushTargetUuid    = null;
+        pushTicks         = 0;
         this.entityData.set(IS_CHARGING, false);
         this.entityData.set(IS_WINDING_UP, false);
         this.entityData.set(IS_PUSHING, false);
@@ -621,14 +627,14 @@ public class TheFoolEntity extends Monster {
     @Override
     public void die(@NotNull DamageSource source) {
         super.die(source);
-        waitingForDeath = true;
-        deathHoldTicks  = 0;
+        waitingForDeath   = true;
+        deathHoldTicks    = 0;
         setNoGravity(true);
         setDeltaMovement(0, 0, 0);
-        dashingToward = null;
-        dashDirection = null;
-        pushTarget    = null;
-        pushTicks     = 0;
+        dashingTowardUuid = null;
+        dashDirection     = null;
+        pushTargetUuid    = null;
+        pushTicks         = 0;
         this.entityData.set(IS_CHARGING, false);
         this.entityData.set(IS_WINDING_UP, false);
         this.entityData.set(IS_PUSHING, false);

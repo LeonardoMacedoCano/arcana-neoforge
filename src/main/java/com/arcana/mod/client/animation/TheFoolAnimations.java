@@ -224,6 +224,16 @@ public class TheFoolAnimations {
                     new Keyframe(0.0F, KeyframeAnimations.degreeVec(-78.0F, 0.0F, 10.0F), AnimationChannel.Interpolations.CATMULLROM),
                     new Keyframe(0.4F, KeyframeAnimations.degreeVec(-78.0F, 0.0F, 10.0F), AnimationChannel.Interpolations.CATMULLROM)
             ))
+            .addAnimation("RightLeg", new AnimationChannel(AnimationChannel.Targets.ROTATION,
+                    new Keyframe(0.0F, KeyframeAnimations.degreeVec(18.0F, 0.0F, 3.0F), AnimationChannel.Interpolations.CATMULLROM),
+                    new Keyframe(0.2F, KeyframeAnimations.degreeVec(15.0F, 0.0F, 3.0F), AnimationChannel.Interpolations.CATMULLROM),
+                    new Keyframe(0.4F, KeyframeAnimations.degreeVec(18.0F, 0.0F, 3.0F), AnimationChannel.Interpolations.CATMULLROM)
+            ))
+            .addAnimation("LeftLeg", new AnimationChannel(AnimationChannel.Targets.ROTATION,
+                    new Keyframe(0.0F, KeyframeAnimations.degreeVec(20.0F, 0.0F, -3.0F), AnimationChannel.Interpolations.CATMULLROM),
+                    new Keyframe(0.2F, KeyframeAnimations.degreeVec(17.0F, 0.0F, -3.0F), AnimationChannel.Interpolations.CATMULLROM),
+                    new Keyframe(0.4F, KeyframeAnimations.degreeVec(20.0F, 0.0F, -3.0F), AnimationChannel.Interpolations.CATMULLROM)
+            ))
             .build();
 
     public static final AnimationDefinition DEATH = AnimationDefinition.Builder.withLength(5.0F)
@@ -289,15 +299,16 @@ public class TheFoolAnimations {
                     new Keyframe(0.5F,  KeyframeAnimations.degreeVec(16.0F, 0.0F,  18.0F), AnimationChannel.Interpolations.CATMULLROM),
                     new Keyframe(1.0F,  KeyframeAnimations.degreeVec(20.0F, 0.0F,  22.0F), AnimationChannel.Interpolations.CATMULLROM)
             ))
+            // Pernas levemente abertas e instáveis
             .addAnimation("RightLeg", new AnimationChannel(AnimationChannel.Targets.ROTATION,
-                    new Keyframe(0.0F,  KeyframeAnimations.degreeVec(0.0F,  0.0F, 6.0F), AnimationChannel.Interpolations.CATMULLROM),
-                    new Keyframe(0.5F,  KeyframeAnimations.degreeVec(0.0F,  0.0F, 4.0F), AnimationChannel.Interpolations.CATMULLROM),
-                    new Keyframe(1.0F,  KeyframeAnimations.degreeVec(0.0F,  0.0F, 6.0F), AnimationChannel.Interpolations.CATMULLROM)
+                    new Keyframe(0.0F,  KeyframeAnimations.degreeVec(5.0F, 0.0F,  8.0F), AnimationChannel.Interpolations.CATMULLROM),
+                    new Keyframe(0.5F,  KeyframeAnimations.degreeVec(3.0F, 0.0F,  5.0F), AnimationChannel.Interpolations.CATMULLROM),
+                    new Keyframe(1.0F,  KeyframeAnimations.degreeVec(5.0F, 0.0F,  8.0F), AnimationChannel.Interpolations.CATMULLROM)
             ))
             .addAnimation("LeftLeg", new AnimationChannel(AnimationChannel.Targets.ROTATION,
-                    new Keyframe(0.0F,  KeyframeAnimations.degreeVec(0.0F,  0.0F, -6.0F), AnimationChannel.Interpolations.CATMULLROM),
-                    new Keyframe(0.5F,  KeyframeAnimations.degreeVec(0.0F,  0.0F, -4.0F), AnimationChannel.Interpolations.CATMULLROM),
-                    new Keyframe(1.0F,  KeyframeAnimations.degreeVec(0.0F,  0.0F, -6.0F), AnimationChannel.Interpolations.CATMULLROM)
+                    new Keyframe(0.0F,  KeyframeAnimations.degreeVec(5.0F, 0.0F, -8.0F), AnimationChannel.Interpolations.CATMULLROM),
+                    new Keyframe(0.5F,  KeyframeAnimations.degreeVec(3.0F, 0.0F, -5.0F), AnimationChannel.Interpolations.CATMULLROM),
+                    new Keyframe(1.0F,  KeyframeAnimations.degreeVec(5.0F, 0.0F, -8.0F), AnimationChannel.Interpolations.CATMULLROM)
             ))
             .build();
 }

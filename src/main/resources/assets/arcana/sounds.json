@@ -15,13 +15,13 @@
   },
   "the_fool.death": {
     "sounds": [
-      {"name": "arcana:entity/the_fool/death_1", "volume": 1.0, "pitch": 0.6}
+      {"name": "arcana:entity/the_fool/death_1", "volume": 1.0, "pitch": 1.0}
     ],
     "subtitle": "subtitles.arcana.the_fool.death"
   },
   "the_fool.shockwave": {
     "sounds": [
-      {"name": "arcana:entity/the_fool/hurt_1", "volume": 1.0, "pitch": 0.5}
+      {"name": "arcana:entity/the_fool/shockwave", "volume": 1.0, "pitch": 0.5}
     ],
     "subtitle": "subtitles.arcana.the_fool.shockwave"
   }

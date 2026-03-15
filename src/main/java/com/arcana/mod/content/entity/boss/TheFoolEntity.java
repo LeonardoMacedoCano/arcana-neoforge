@@ -9,7 +9,6 @@ import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.damagesource.DamageSource;
@@ -480,6 +479,7 @@ public class TheFoolEntity extends Monster {
     @Override
     @Nullable
     public LivingEntity getTarget() {
+        if (waitingForDeath) return null;
         if (isIntroInProgress()) return null;
         if (isStunned()) return null;
         return super.getTarget();
@@ -487,6 +487,7 @@ public class TheFoolEntity extends Monster {
 
     @Override
     public boolean hurt(@NotNull DamageSource source, float amount) {
+        if (waitingForDeath) return false;
         if (isIntroInProgress()) return false;
         if (source.is(DamageTypeTags.IS_PROJECTILE)) return false;
         boolean result = super.hurt(source, Math.min(amount, MAX_DAMAGE_PER_HIT));
@@ -632,6 +633,7 @@ public class TheFoolEntity extends Monster {
     @Override
     public void die(@NotNull DamageSource source) {
         super.die(source);
+        this.bossBar.setVisible(false);
         waitingForDeath   = true;
         deathHoldTicks    = 0;
         setNoGravity(true);

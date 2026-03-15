@@ -35,5 +35,10 @@
   "advancement.arcana.defeat_the_fool.title": "O Louco Caiu",
   "advancement.arcana.defeat_the_fool.description": "Derrote o Louco pela primeira vez.",
 
-  "gui.arcana.diary.title": "Diário de Kaliastrus"
+  "gui.arcana.diary.title": "Diário de Kaliastrus",
+
+  "subtitles.arcana.the_fool.ambient": "O Louco murmura",
+  "subtitles.arcana.the_fool.hurt": "O Louco recua",
+  "subtitles.arcana.the_fool.death": "O Louco cai",
+  "subtitles.arcana.the_fool.shockwave": "O Louco repele"
 }

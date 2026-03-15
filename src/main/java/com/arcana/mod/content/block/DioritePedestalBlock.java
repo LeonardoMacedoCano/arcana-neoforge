@@ -4,6 +4,7 @@ import com.arcana.mod.content.blockentity.DioritePedestalBlockEntity;
 import com.arcana.mod.registry.ModBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.Containers;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.FireChargeItem;
@@ -79,6 +80,17 @@ public class DioritePedestalBlock extends BaseEntityBlock {
         }
 
         return ItemInteractionResult.SUCCESS;
+    }
+
+    @Override
+    protected void onRemove(BlockState state, @NotNull Level level, @NotNull BlockPos pos, BlockState newState, boolean movedByPiston) {
+        if (!state.is(newState.getBlock())) {
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof DioritePedestalBlockEntity pedestal) {
+                Containers.dropContents(level, pos, pedestal);
+            }
+        }
+        super.onRemove(state, level, pos, newState, movedByPiston);
     }
 
     @Override

@@ -538,8 +538,6 @@ public class TheFoolEntity extends Monster {
                     p.knockback(1.4, this.getX() - p.getX(), this.getZ() - p.getZ());
                     p.setDeltaMovement(p.getDeltaMovement().add(0, 0.3, 0));
                 });
-        sl.playSound(null, this.getX(), this.getY(), this.getZ(),
-                ModSounds.THE_FOOL_SHOCKWAVE.get(), this.getSoundSource(), 1.2f, 0.6f);
     }
 
     private void checkPushTrigger() {

@@ -45,6 +45,11 @@ public class DiaryEvents {
     }
 
     @SubscribeEvent
+    public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        RITUAL_CHECK_COOLDOWN.remove(event.getEntity().getUUID());
+    }
+
+    @SubscribeEvent
     public static void onItemPickup(ItemEntityPickupEvent.Pre event) {
         DiaryPersistenceHandler.handleDiaryPickup(event);
     }

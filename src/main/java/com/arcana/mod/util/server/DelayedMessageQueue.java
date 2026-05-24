@@ -23,6 +23,7 @@ public class DelayedMessageQueue {
     }
 
     public boolean tick() {
+        if (player.connection == null) return true;
         if (messages.isEmpty()) return true;
 
         timer++;

@@ -145,6 +145,7 @@ public class DiaryRitualGenerator {
                         return null;
                     }
                     BlockPos candidate = origin.offset(x, 0, z);
+                    if (!level.hasChunkAt(candidate)) continue;
                     if (isGoodSpot(level, candidate)) {
                         ArcanaLog.debug(MODULE, "Valid spot found at {}", candidate);
                         return level.getHeightmapPos(Heightmap.Types.WORLD_SURFACE, candidate);
@@ -178,6 +179,7 @@ public class DiaryRitualGenerator {
         for (int x = -AREA_MIN_OPEN_RADIUS; x <= AREA_MIN_OPEN_RADIUS; x++)
             for (int z = -AREA_MIN_OPEN_RADIUS; z <= AREA_MIN_OPEN_RADIUS; z++) {
                 BlockPos check = center.offset(x, 0, z);
+                if (!level.hasChunkAt(check)) return false;
                 BlockPos surface = level.getHeightmapPos(Heightmap.Types.WORLD_SURFACE, check);
                 if (surface.getY() - baseY > 2) return false;
             }

@@ -25,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 public class DioritePedestalBlockEntity extends BlockEntity implements Container {
 
     private NonNullList<ItemStack> items = NonNullList.withSize(2, ItemStack.EMPTY);
+    private boolean pendingRitualCheck = false;
 
     public DioritePedestalBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.DIORITE_PEDESTAL.get(), pos, state);
@@ -53,15 +54,21 @@ public class DioritePedestalBlockEntity extends BlockEntity implements Container
 
         if (items.get(0).isEmpty() && stack.is(Items.NETHER_STAR)) {
             setItemAndSync(0, stack.split(1));
+            if (hasBoth()) pendingRitualCheck = true;
             return true;
         }
 
         if (items.get(1).isEmpty() && stack.is(ModItems.STRANGE_TOTEM.get())) {
             setItemAndSync(1, stack.split(1));
+            if (hasBoth()) pendingRitualCheck = true;
             return true;
         }
 
         return false;
+    }
+
+    public void schedulePendingRitualCheck() {
+        this.pendingRitualCheck = true;
     }
 
     public ItemStack tryRemove() {
@@ -72,6 +79,8 @@ public class DioritePedestalBlockEntity extends BlockEntity implements Container
 
     public static void tick(Level level, BlockPos pos, BlockState ignoredState, DioritePedestalBlockEntity be) {
         if (level.isClientSide || !be.hasBoth()) return;
+        if (!be.pendingRitualCheck) return;
+        be.pendingRitualCheck = false;
 
         if (!isFireNearby(level, pos)) return;
 

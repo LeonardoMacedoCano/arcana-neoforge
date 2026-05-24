@@ -80,6 +80,12 @@ public class TheFoolEntity extends Monster {
     public final AnimationState pushAnimationState        = new AnimationState();
     public final AnimationState deathAnimationState       = new AnimationState();
 
+    private final AnimationState[] allAnimations = new AnimationState[]{
+            floatingAnimationState, rightAttackAnimationState, leftAttackAnimationState,
+            stunnedAnimationState, chargingAnimationState, windupAnimationState,
+            pushAnimationState, deathAnimationState
+    };
+
     private final ServerBossEvent bossBar = new ServerBossEvent(
             this.getDisplayName(), BossEvent.BossBarColor.PURPLE, BossEvent.BossBarOverlay.PROGRESS);
 
@@ -699,11 +705,7 @@ public class TheFoolEntity extends Monster {
     }
 
     private void stopAllExcept(AnimationState keep) {
-        for (AnimationState s : new AnimationState[]{
-                floatingAnimationState, rightAttackAnimationState, leftAttackAnimationState,
-                stunnedAnimationState, chargingAnimationState, windupAnimationState,
-                pushAnimationState, deathAnimationState
-        }) {
+        for (AnimationState s : allAnimations) {
             if (s != keep) s.stop();
         }
     }
